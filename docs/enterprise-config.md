@@ -1,81 +1,64 @@
-# Enterprise configuration defaults
+# 企業組態預設值
 
-Git Credential Manager (GCM) can be configured using multiple
-different mechanisms. In order of preference, those mechanisms are:
+Git Credential Manager (GCM) 可透過多種機制進行組態設定不同的機制。按優先順序排列，這些機制是：
 
-1. [Environment variables][environment]
-1. Standard [Git configuration][config] files
-   1. Repository/local configuration (`.git/config`)
-   1. User/global configuration (`$HOME/.gitconfig` or `%HOME%\.gitconfig`)
-   1. Installation/system configuration (`etc/gitconfig`)
-1. Enterprise system administrator defaults
-1. Compiled default values
+1. [環境變數][environment]
+1. 標準 [Git 組態][config] 檔案
+   1. 儲存庫/本機組態 (`.git/config`)
+   1. 使用者/全域組態 (`$HOME/.gitconfig` 或 `%HOME%\.gitconfig`)
+   1. 安裝/系統組態 (`etc/gitconfig`)
+1. 企業系統管理員預設值
+1. 編譯的預設值
 
-This model largely matches what Git itself supports, namely environment
-variables that take precedence over Git configuration files.
+此模型大致上與 Git 本身支援的內容相符，也就是環境變數的優先順序高於 Git 組態檔案。
 
-The addition of the enterprise system administrator defaults enables those
-administrators to configure many GCM settings using familiar MDM tooling, rather
-than having to modify the Git installation configuration files.
+新增企業系統管理員預設值的功能，讓那些管理員能使用熟悉的 MDM 工具來設定許多 GCM 設定，而不必修改 Git 的安裝組態檔案。
 
-## User Freedom
+## 使用者自由
 
-We believe the user should _always_ be at liberty to configure
-Git and GCM exactly as they wish. By preferring environment variables and Git
-configuration files over system admin values, these only act as _default values_
-that can always be overridden by the user in the usual ways.
+我們相信使用者應_永遠_保有自由來設定 Git 和 GCM，完全依照其個人意願。透過將環境變數和 Git 組態檔案的優先順序設定在系統管理員值之上，這些值僅作為_預設值_使用者隨時能以慣用方式覆寫。
 
 ## Windows
 
-Default setting values come from the Windows Registry, specifically the
-following keys:
+預設設定值來自 Windows 登錄檔，具體而言是下列機碼：
 
-### 32-bit Windows
+### 32 位元 Windows
 
 ```text
 HKEY_LOCAL_MACHINE\SOFTWARE\GitCredentialManager\Configuration
 ```
 
-### 64-bit Windows
+### 64 位元 Windows
 
 ```text
 HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GitCredentialManager\Configuration
 ```
 
-> GCM is a 32-bit executable on Windows. When running on a 64-bit
-installation of Windows registry access is transparently redirected to the
-`WOW6432Node` node.
+> GCM 在 Windows 上是一個 32 位元的可執行檔。在 64 位元
 
-By using the Windows Registry, system administrators can use Group Policy to
-easily set defaults for GCM's settings.
+Windows 上執行時，對登錄檔的存取會被自動重新導向至`WOW6432Node` 節點。
 
-The names and possible values of all settings under this key are the same as
-those of the [Git configuration][config] settings.
+透過使用 Windows 登錄檔，系統管理員可以利用群組原則輕鬆地為 GCM 的設定設定預設值。
 
-The type of each registry key can be either `REG_SZ` (string) or `REG_DWORD`
-(integer).
+在此機碼下的所有設定名稱與可能值，都與 [Git 組態][config] 設定中的相同。
+
+每個登錄機碼的類型可以是 `REG_SZ` (字串) 或 `REG_DWORD` (整數)。
 
 ## macOS
 
-Default settings values come from macOS's preferences system. Configuration
-profiles can be deployed to devices using a compatible Mobile Device Management
-(MDM) solution.
+預設設定值來自 macOS 的偏好設定系統。組態描述檔可以透過相容的行動裝置管理 (MDM) 解決方案部署至裝置。
 
-Configuration for Git Credential Manager must take the form of a dictionary, set
-for the domain `git-credential-manager` under the key `configuration`. For
-example:
+Git Credential Manager 的組態必須採用字典的形式，設定於網域 `git-credential-manager` 下的 `configuration` 機碼。例如：
 
 ```shell
 defaults write git-credential-manager configuration -dict-add <key> <value>
 ```
 
-..where `<key>` is the name of the settings from the [Git configuration][config]
-reference, and `<value>` is the desired value.
+..其中 `<key>` 是 [Git 組態][config] 參考文件中的設定名稱，而 `<value>` 是所需的值。
 
-All values in the `configuration` dictionary must be strings. For boolean values
-use `true` or `false`, and for integer values use the number in string form.
+在 `configuration` 字典中的所有值都必須是字串。對於布林值，請使用 `true` 或 `false`；對於整數值，請使用字串形式的數字。
 
-To read the current configuration:
+讀取目前的組態：
 
 ```console
 $ defaults read git-credential-manager configuration
@@ -88,7 +71,7 @@ $ defaults read git-credential-manager configuration
 
 ## Linux
 
-Default configuration setting stores has not been implemented.
+預設組態設定存放區尚未實作。
 
 [environment]: environment.md
 [config]: configuration.md

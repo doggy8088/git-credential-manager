@@ -1,9 +1,8 @@
-# Validating GCM's GPG signature
+# 驗證 GCM 的 GPG 簽章
 
-Follow the below instructions to import GCM's public key and use it to validate
-the latest Debian package and/or tarball signature.
+請依照下方指示匯入 GCM 的公鑰，並用它來驗證最新的 Debian 套件及/或 tarball 簽章。
 
-## Debian package
+## Debian 套件
 
 ```shell
 # Install needed packages

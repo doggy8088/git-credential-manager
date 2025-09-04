@@ -1,786 +1,693 @@
-# Configuration options
+# 設定選項
 
-[Git Credential Manager][usage] works out of the box for most users.
+[Git Credential Manager][usage] 對大多數使用者而言，無需額外設定即可運作。
 
-Git Credential Manager (GCM) can be configured using Git's configuration files,
-and follows all of the same rules Git does when consuming the files.
+Git Credential Manager (GCM) 可透過 Git 的設定檔進行設定，並遵循 Git 取用這些檔案時的所有相同規則。
 
-Global configuration settings override system configuration settings, and local
-configuration settings override global settings; and because the configuration
-details exist within Git's configuration files you can use Git's `git config`
-utility to set, unset, and alter the setting values. All of GCM's configuration
-settings begin with the term `credential`.
+全域設定會覆寫系統設定，本地設定則會覆寫全域設定；由於設定詳細資訊存在於 Git 的設定檔中，您可以使用 Git 的 `git config` 工具來設定、取消設定及變更設定值。所有 GCM 的設定皆以 `credential` 一詞開頭。
 
-GCM honors several levels of settings, in addition to the standard local
-\> global \> system tiering Git uses. URL-specific settings or overrides can be
-applied to any value in the `credential` namespace with the syntax below.
+GCM 除了 Git 使用的標準本地 \> 全域 \> 系統分層外，還支援多個層級的設定。特定於 URL 的設定或覆寫可使用以下語法，套用至 `credential` 命名空間中的任何值。
 
-Additionally, GCM respects several GCM-specific [environment variables][envars]
-**which take precedence over configuration options**. System administrators may
-also configure [default values][enterprise-config] for many settings used by GCM.
+此外，GCM 也會遵循數個 GCM 特有的[環境變數][envars]，**其優先權高於設定選項**。系統管理員也可以為 GCM 使用的許多設定配置[預設值][enterprise-config]。
 
-GCM will only be used by Git if it is installed and configured. Use
-`git config --global credential.helper manager` to assign GCM as your
-credential helper. Use `git config credential.helper` to see the current
-configuration.
+GCM 只有在安裝和設定後才能被 Git 使用。請使用 `git config --global credential.helper manager` 將 GCM 指定為您的憑證輔助程式。使用 `git config credential.helper` 來查看目前的設定。
 
-**Example:**
+**範例：**
 
-> `credential.microsoft.visualstudio.com.namespace` is more specific than
-> `credential.visualstudio.com.namespace`, which is more specific than
-> `credential.namespace`.
+> `credential.microsoft.visualstudio.com.namespace` 比 `credential.visualstudio.com.namespace` 更具體，而後者又比 `credential.namespace` 更具體。
 
-In the examples above, the `credential.namespace` setting would affect any
-remote repository; the `credential.visualstudio.com.namespace` would affect any
-remote repository in the domain, and/or any subdomain (including `www.`) of,
-'visualstudio.com'; where as the
-`credential.microsoft.visualstudio.com.namespace` setting would only be applied
-to remote repositories hosted at 'microsoft.visualstudio.com'.
+在上述範例中，`credential.namespace` 設定會影響任何遠端儲存庫；`credential.visualstudio.com.namespace` 會影響 'visualstudio.com' 網域及/或其任何子網域（包含 `www.`）中的任何遠端儲存庫；而 `credential.microsoft.visualstudio.com.namespace` 設定則只會套用至託管在 'microsoft.visualstudio.com' 的遠端儲存庫。
 
-For the complete list of settings GCM understands, see the list below.
+關於 GCM 可理解的完整設定清單，請參閱下方列表。
 
-## Available settings
+## 可用設定
 
 ### credential.interactive
 
-Permit or disable GCM from interacting with the user (showing GUI or TTY
-prompts). If interaction is required but has been disabled, an error is returned.
+允許或停用 GCM 與使用者互動（顯示 GUI 或 TTY 提示）。若需要互動但此功能已被停用，則會傳回錯誤。
 
-This can be helpful when using GCM in headless and unattended environments, such
-as build servers, where it would be preferable to fail than to hang indefinitely
-waiting for a non-existent user.
+這在無周邊（headless）和無人看管的環境（例如建構伺服器）中使用 GCM 時相當有幫助，在這些環境中，讓程式失敗會比無限期地等待一個不存在的使用者來得好。
 
-To disable interactivity set this to `false` or `0`.
+若要停用互動功能，請將此值設為 `false` 或 `0`。
 
-#### Compatibility
+#### 相容性
 
-In previous versions of GCM this setting had a different behavior and accepted
-other values. The following table summarizes the change in behavior and the
-mapping of older values such as `never`:
+在 GCM 的舊版本中，此設定有不同的行為並接受其他值。下表總結了行為的變化以及舊值（如 `never`）的對應關係：
 
-Value(s)|Old meaning|New meaning
+值|舊有意義|新意義
 -|-|-
-`auto`|Prompt if required – use cached credentials if possible|_(unchanged)_
-`never`, `false`| Never prompt – fail if interaction is required|_(unchanged)_
-`always`, `force`, `true`|Always prompt – don't use cached credentials|Prompt if required (same as the old `auto` value)
+`auto`|若需要則提示 – 可能的話使用快取憑證|_(不變)_
+`never`, `false`| 永不提示 – 若需要互動則失敗|_(不變)_
+`always`, `force`, `true`|一律提示 – 不使用快取的憑證|若需要則提示（與舊的 `auto` 值相同）
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.interactive false
 ```
 
-Defaults to enabled.
+預設為啟用。
 
-**Also see: [GCM_INTERACTIVE][gcm-interactive]**
+**另請參閱：[GCM_INTERACTIVE][gcm-interactive]**
 
 ---
 
 ### credential.trace
 
-Enables trace logging of all activities.
-Configuring Git and GCM to trace to the same location is often desirable, and
-GCM is compatible and cooperative with `GIT_TRACE`.
+啟用所有活動的追蹤記錄。將 Git 與 GCM 設定為追蹤至相同位置通常是理想的做法，且 GCM 與 `GIT_TRACE` 相容並協同運作。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.trace /tmp/git.log
 ```
 
-If the value of `credential.trace` is a full path to a file in an existing
-directory, logs are appended to the file.
+如果 `credential.trace` 的值是現有目錄中檔案的完整路徑，記錄將會附加到該檔案。
 
-If the value of `credential.trace` is `true` or `1`, logs are written to
-standard error.
+如果 `credential.trace` 的值為 `true` 或 `1`，記錄會寫入標準錯誤。
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GCM_TRACE][gcm-trace]**
+**另請參閱：[GCM_TRACE][gcm-trace]**
 
 ---
 
 ### credential.traceSecrets
 
-Enables tracing of secret and sensitive information, which is by default masked
-in trace output. Requires that `credential.trace` is also enabled.
+啟用追蹤機密與敏感資訊，這些資訊預設會在追蹤輸出中被遮罩。需要同時啟用 `credential.trace`。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.traceSecrets true
 ```
 
-If the value of `credential.traceSecrets` is `true` or `1`, trace logs will include
-secret information.
+如果 `credential.traceSecrets` 的值為 `true` 或 `1`，追蹤記錄將會包含機密資訊。
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GCM_TRACE_SECRETS][gcm-trace-secrets]**
+**另請參閱：[GCM_TRACE_SECRETS][gcm-trace-secrets]**
 
 ---
 
 ### credential.traceMsAuth
 
-Enables inclusion of Microsoft Authentication library (MSAL) logs in GCM trace
-output. Requires that `credential.trace` is also enabled.
+啟用將 Microsoft 驗證函式庫 (MSAL) 記錄包含於 GCM 追蹤輸出中。需要同時啟用 `credential.trace`。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.traceMsAuth true
 ```
 
-If the value of `credential.traceMsAuth` is `true` or `1`, trace logs will
-include verbose MSAL logs.
+如果 `credential.traceMsAuth` 的值為 `true` 或 `1`，追蹤記錄將會包含詳細的 MSAL 記錄。
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GCM_TRACE_MSAUTH][gcm-trace-msauth]**
+**另請參閱：[GCM_TRACE_MSAUTH][gcm-trace-msauth]**
 
 ---
 
 ### credential.debug
 
-Pauses execution of GCM at launch to wait for a debugger to be attached.
+在 GCM 啟動時暫停執行，以等待偵錯器附加。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.debug true
 ```
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GCM_DEBUG][gcm-debug]**
+**另請參閱：[GCM_DEBUG][gcm-debug]**
 
 ---
 
 ### credential.provider
 
-Define the host provider to use when authenticating.
+定義驗證時要使用的主機供應商。
 
-ID|Provider
+ID|供應商
 -|-
-`auto` _(default)_|_\[automatic\]_ ([learn more][autodetect])
+`auto` _(預設)_|_\[自動\]_ ([了解更多][autodetect])
 `azure-repos`|Azure Repos
 `github`|GitHub
 `bitbucket`|Bitbucket
-`gitlab`|GitLab _(supports OAuth in browser, personal access token and Basic Authentication)_
-`generic`|Generic (any other provider not listed above)
+`gitlab`|GitLab _(支援瀏覽器中的 OAuth、個人存取權杖與基本驗證)_
+`generic`|通用 (任何其他未列於上方的供應商)
 
-Automatic provider selection is based on the remote URL.
+自動供應商選擇是根據遠端 URL。
 
-This setting is typically used with a scoped URL to map a particular set of
-remote URLs to providers, for example to mark a host as a GitHub Enterprise
-instance.
+此設定通常與限定範圍的 URL 一起使用，以對應一組特定的遠端 URL 至供應商，例如將主機標記為 GitHub Enterprise 執行個體。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.ghe.contoso.com.provider github
 ```
 
-**Also see: [GCM_PROVIDER][gcm-provider]**
+**另請參閱：[GCM_PROVIDER][gcm-provider]**
 
 ---
 
-### credential.authority _(deprecated)_
+### credential.authority _(已棄用)_
 
-> This setting is deprecated and should be replaced by `credential.provider`
-> with the corresponding provider ID value.
+> 此設定已棄用，應由 `credential.provider` 取代並使用對應的供應商 ID 值。
 >
-> See the [migration guide][provider-migrate] for more information.
+> 如需更多資訊，請參閱[遷移指南][provider-migrate]。
 
-Select the host provider to use when authenticating by which authority is
-supported by the providers.
+選擇驗證時要使用的主機供應商，此選擇是根據供應商支援的授權單位。
 
-Authority|Provider(s)
+授權機構|供應商
 -|-
-`auto` _(default)_|_\[automatic\]_
-`msa`, `microsoft`, `microsoftaccount`, `aad`, `azure`, `azuredirectory`, `live`, `liveconnect`, `liveid`|Azure Repos _(supports Microsoft Authentication)_
-`github`|GitHub _(supports GitHub Authentication)_
-`bitbucket`|Bitbucket.org _(supports Basic Authentication and OAuth)_, Bitbucket Server _(supports Basic Authentication)_
-`gitlab`|GitLab _(supports OAuth in browser, personal access token and Basic Authentication)_
-`basic`, `integrated`, `windows`, `kerberos`, `ntlm`, `tfs`, `sso`|Generic _(supports Basic and Windows Integrated Authentication)_
+`auto` _(預設)_|_\[自動\]_
+`msa`, `microsoft`, `microsoftaccount`, `aad`, `azure`, `azuredirectory`, `live`, `liveconnect`, `liveid`|Azure Repos _(支援 Microsoft 驗證)_
+`github`|GitHub _(支援 GitHub 驗證)_
+`bitbucket`|Bitbucket.org _(支援基本驗證與 OAuth)_，Bitbucket Server _(支援基本驗證)_
+`gitlab`|GitLab _(支援瀏覽器中的 OAuth、個人存取權杖與基本驗證)_
+`basic`, `integrated`, `windows`, `kerberos`, `ntlm`, `tfs`, `sso`|通用 _(支援基本與 Windows 整合式驗證)_
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.ghe.contoso.com.authority github
 ```
 
-**Also see: [GCM_AUTHORITY][gcm-authority]**
+**另請參閱：[GCM_AUTHORITY][gcm-authority]**
 
 ---
 
 ### credential.guiPrompt
 
-Permit or disable GCM from presenting GUI prompts. If an equivalent terminal/
-text-based prompt is available, that will be shown instead.
+允許或停用 GCM 顯示 GUI 提示。如果存在等效的終端機/文字型提示，則會改為顯示該提示。
 
-To disable all interactivity see [credential.interactive][credential-interactive].
+若要停用所有互動功能，請參閱 [credential.interactive][credential-interactive]。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.guiPrompt false
 ```
 
-Defaults to enabled.
+預設為啟用。
 
-**Also see: [GCM_GUI_PROMPT][gcm-gui-prompt]**
+**另請參閱：[GCM_GUI_PROMPT][gcm-gui-prompt]**
 
 ---
 
 ### credential.guiSoftwareRendering
 
-Force the use of software rendering for GUI prompts.
+強制 GUI 提示使用軟體渲染。
 
-This is currently only applicable on Windows.
+此設定目前僅適用於 Windows。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.guiSoftwareRendering true
 ```
 
-Defaults to false (use hardware acceleration where available).
+預設為 false (在可用時使用硬體加速)。
 
 > [!NOTE]
-> Windows on ARM devices defaults to using software rendering to work around a
-> known Avalonia issue: <https://github.com/AvaloniaUI/Avalonia/issues/10405>
+> ARM 裝置上的 Windows 預設使用軟體渲染以解決已知的 Avalonia 問題：<https://github.com/AvaloniaUI/Avalonia/issues/10405>
 
-**Also see: [GCM_GUI_SOFTWARE_RENDERING][gcm-gui-software-rendering]**
+**另請參閱：[GCM_GUI_SOFTWARE_RENDERING][gcm-gui-software-rendering]**
 
 ---
 
 ### credential.allowUnsafeRemotes
 
-Allow transmitting credentials to unsafe remote URLs such as unencrypted HTTP
-URLs. This setting is not recommended for general use and should only be used
-when necessary.
+允許將憑證傳輸到不安全的遠端 URL，例如未加密的 HTTP URL。不建議在一般情況下使用此設定，僅應在必要時使用。
 
-Defaults false (disallow unsafe remote URLs).
+預設為 false (不允許不安全的遠端 URL)。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.allowUnsafeRemotes true
 ```
 
-**Also see: [GCM_ALLOW_UNSAFE_REMOTES][gcm-allow-unsafe-remotes]**
+**另請參閱：[GCM_ALLOW_UNSAFE_REMOTES][gcm-allow-unsafe-remotes]**
 
 ---
 
 ### credential.autoDetectTimeout
 
-Set the maximum length of time, in milliseconds, that GCM should wait for a
-network response during host provider auto-detection probing.
+設定 GCM 在主機供應商自動偵測探測期間應等待網路回應的最長時間 (以毫秒為單位)。
 
-See [auto-detection][auto-detection] for more information.
+有關更多資訊，請參閱 [auto-detection][auto-detection]。
 
-**Note:** Use a negative or zero value to disable probing altogether.
+**注意：** 使用負值或零可完全停用探測。
 
-Defaults to 2000 milliseconds (2 seconds).
+預設為 2000 毫秒 (2 秒)。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.autoDetectTimeout -1
 ```
 
-**Also see: [GCM_AUTODETECT_TIMEOUT][gcm-autodetect-timeout]**
+**另請參閱：[GCM_AUTODETECT_TIMEOUT][gcm-autodetect-timeout]**
 
 ---
 
 ### credential.allowWindowsAuth
 
-Allow detection of Windows Integrated Authentication (WIA) support for generic
-host providers. Setting this value to `false` will prevent the use of WIA and
-force a basic authentication prompt when using the Generic host provider.
+允許偵測通用主機供應商是否支援 Windows 整合式驗證 (WIA)。將此值設定為 `false` 將防止使用 WIA，並在使用通用主機供應商時強制顯示基本驗證提示。
 
-**Note:** WIA is only supported on Windows.
+**注意：** WIA 僅在 Windows 上受支援。
 
-**Note:** WIA is an umbrella term for NTLM and Kerberos (and Negotiate).
+**注意：** WIA 是 NTLM 和 Kerberos (以及 Negotiate) 的總稱。
 
-Value|WIA detection
+值|WIA 偵測
 -|-
-`true` _(default)_|Permitted
-`false`|Not permitted
+`true` _(預設)_|允許
+`false`|不允許
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.tfsonprem123.allowWindowsAuth false
 ```
 
-**Also see: [GCM_ALLOW_WINDOWSAUTH][gcm-allow-windowsauth]**
+**另請參閱：[GCM_ALLOW_WINDOWSAUTH][gcm-allow-windowsauth]**
 
 ---
 
-### credential.httpProxy _(deprecated)_
+### credential.httpProxy _(已棄用)_
 
-> This setting is deprecated and should be replaced by the
-> [standard `http.proxy` Git configuration option][git-config-http-proxy].
+> 此設定已棄用，應改用[標準的 `http.proxy` Git 設定選項][git-config-http-proxy]。
 >
-> See [HTTP Proxy][http-proxy] for more information.
+> 請參閱 [HTTP Proxy][http-proxy] 以取得更多資訊。
 
-Configure GCM to use the a proxy for network operations.
+設定 GCM 使用代理伺服器以進行網路操作。
 
-**Note:** Git itself does _not_ respect this setting; this affects GCM _only_.
+**注意：**Git 本身並 _不_ 遵守此設定；此設定 _僅_ 影響 GCM。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.httpsProxy http://john.doe:password@proxy.contoso.com
 ```
 
-**Also see: [GCM_HTTP_PROXY][gcm-http-proxy]**
+**另請參閱：[GCM_HTTP_PROXY][gcm-http-proxy]**
 
 ---
 
 ### credential.bitbucketAuthModes
 
-Override the available authentication modes presented during Bitbucket
-authentication. If this option is not set, then the available authentication
-modes will be automatically detected.
+覆寫在 Bitbucket 驗證期間所呈現的可用驗證模式。如果未設定此選項，則可用的驗證模式將會被自動偵測。
 
-**Note:** This setting only applies to Bitbucket.org, and not Server or DC
-instances.
+**注意：**此設定僅適用於 Bitbucket.org，不適用於 Server 或 DC 實例。
 
-**Note:** This setting supports multiple values separated by commas.
+**注意：**此設定支援多個值，以逗號分隔。
 
-Value|Authentication Mode
+值|驗證模式
 -|-
-_(unset)_|Automatically detect modes
-`oauth`|OAuth-based authentication
-`basic`|Basic/PAT-based authentication
+_(未設定)_|自動偵測模式
+`oauth`|基於 OAuth 的驗證
+`basic`|基於基本/PAT 的驗證
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.bitbucketAuthModes "oauth,basic"
 ```
 
-**Also see: [GCM_BITBUCKET_AUTHMODES][gcm-bitbucket-authmodes]**
+**另請參閱：[GCM_BITBUCKET_AUTHMODES][gcm-bitbucket-authmodes]**
 
 ---
 
 ### credential.bitbucketAlwaysRefreshCredentials
 
-Forces GCM to ignore any existing stored Basic Auth or OAuth access tokens and
-always run through the process to refresh the credentials before returning them
-to Git.
+強制 GCM 忽略任何現有已儲存的基本驗證或 OAuth 存取權杖，並在將憑證回傳給 Git 之前一律執行重新整理程序。
 
-This is especially relevant to OAuth credentials. Bitbucket.org access tokens
-expire after 2 hours, after that the refresh token must be used to get a new
-access token.
+這與 OAuth 憑證尤其相關。Bitbucket.org 的存取權杖會在 2 小時後過期，之後必須使用重新整理權杖來取得新的存取權杖。
 
-Enabling this option will improve performance when using Oauth2 and interacting
-with Bitbucket.org if, on average, commits are done less frequently than every
-2 hours.
+啟用此選項將能提升效能，當使用 Oauth2 並與 Bitbucket.org 互動，且平均提交頻率低於每 2 小時一次時。
 
-Enabling this option will decrease performance when using Basic Auth by
-requiring the user the re-enter credentials every time.
+當使用基本驗證時，啟用此選項將會降低效能，因為它會要求使用者每次都重新輸入憑證。
 
-Value|Refresh Credentials Before Returning
+值|回傳前重新整理憑證
 -|-
-`true`, `1`, `yes`, `on` |Always
-`false`, `0`, `no`, `off`_(default)_|Only when the credentials are found to be invalid
+`true`、`1`、`yes`、`on` |一律
+`false`、`0`、`no`、`off`_(預設)_|僅當憑證被發現無效時
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.bitbucketAlwaysRefreshCredentials true
 ```
 
-Defaults to false/disabled.
+預設為 false/停用。
 
-**Also see: [GCM_BITBUCKET_ALWAYS_REFRESH_CREDENTIALS][gcm-bitbucket-always-refresh-credentials]**
+**另請參閱：[GCM_BITBUCKET_ALWAYS_REFRESH_CREDENTIALS][gcm-bitbucket-always-refresh-credentials]**
 
 ---
 
 ### credential.bitbucketValidateStoredCredentials
 
-Forces GCM to validate any stored credentials before returning them to Git. It
-does this by calling a REST API resource that requires authentication.
+強制 GCM 在將任何已儲存的憑證回傳給 Git 之前驗證它們。它是透過呼叫一個需要驗證的 REST API 資源來完成此操作。
 
-Disabling this option reduces the HTTP traffic within GCM when it is retrieving
-credentials. This may improve user performance, but will increase the number of
-times Git remote calls fail to authenticate with the host and therefore require
-the user to re-try the Git remote call.
+停用此選項可減少 GCM 在擷取時的 HTTP 流量憑證。這可能會改善使用者效能，但會增加 Git 遠端呼叫無法對主機進行身份驗證的次數，因此需要使用者重試 Git 遠端呼叫。
 
-Enabling this option helps ensure Git is always provided with valid credentials.
+啟用此選項有助於確保 Git 始終獲得有效的憑證。
 
-Value|Validate credentials
+值|驗證憑證
 -|-
-`true`, `1`, `yes`, `on`_(default)_|Always
-`false`, `0`, `no`, `off`|Never
+`true`, `1`, `yes`, `on`_(預設)_|總是
+`false`, `0`, `no`, `off`|從不
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.bitbucketValidateStoredCredentials true
 ```
 
-Defaults to true/enabled.
+預設為 true/啟用。
 
-**Also see: [GCM_BITBUCKET_VALIDATE_STORED_CREDENTIALS](environment.md#GCM_BITBUCKET_VALIDATE_STORED_CREDENTIALS)**
+**另請參閱：[GCM_BITBUCKET_VALIDATE_STORED_CREDENTIALS](environment.md#GCM_BITBUCKET_VALIDATE_STORED_CREDENTIALS)**
 
 ---
 
 ### credential.bitbucketDataCenterOAuthClientId
 
-To use OAuth with Bitbucket DC it is necessary to create an external, incoming
-[AppLink](https://confluence.atlassian.com/bitbucketserver/configure-an-incoming-link-1108483657.html).
+若要搭配 Bitbucket DC 使用 OAuth，必須建立一個外部的、傳入的
+[AppLink](https://confluence.atlassian.com/bitbucketserver/configure-an-incoming-link-1108483657.html)。
 
-It is then necessary to configure the local GCM installation with both the OAuth
-[ClientId](configuration.md#credential.bitbucketDataCenterOAuthClientId) and
-[ClientSecret](configuration.md#credential.bitbucketDataCenterOauthSecret) from
-the AppLink.
+接著便需要使用 OAuth 的
+[ClientId](configuration.md#credential.bitbucketDataCenterOAuthClientId) 與
+[ClientSecret](configuration.md#credential.bitbucketDataCenterOauthSecret) 從
+AppLink 來設定本地端的 GCM 安裝。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.bitbucketDataCenterOAuthClientId 1111111111111111111
 ```
 
-Defaults to undefined.
+預設為未定義。
 
-**Also see: [GCM_BITBUCKET_DATACENTER_CLIENTID](environment.md#GCM_BITBUCKET_DATACENTER_CLIENTID)**
+**另請參閱：[GCM_BITBUCKET_DATACENTER_CLIENTID](environment.md#GCM_BITBUCKET_DATACENTER_CLIENTID)**
 
 ---
 
 ### credential.bitbucketDataCenterOAuthClientSecret
 
-To use OAuth with Bitbucket DC it is necessary to create an external, incoming
-[AppLink](https://confluence.atlassian.com/bitbucketserver/configure-an-incoming-link-1108483657.html).
+若要搭配 Bitbucket DC 使用 OAuth，必須建立一個外部的、傳入的
+[AppLink](https://confluence.atlassian.com/bitbucketserver/configure-an-incoming-link-1108483657.html)。
 
-It is then necessary to configure the local GCM installation with both the OAuth
-[ClientId](configuration.md#credential.bitbucketDataCenterOAuthClientId) and
+接著便需要使用 OAuth 的
+[ClientId](configuration.md#credential.bitbucketDataCenterOAuthClientId) 與
 [ClientSecret](configuration.md#credential.bitbucketDataCenterOauthSecret)
-from the AppLink.
+從 AppLink 來設定本地端的 GCM 安裝。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.bitbucketDataCenterOAuthClientSecret 222222222222222222222
 ```
 
-Defaults to undefined.
+預設為未定義。
 
-**Also see: [GCM_BITBUCKET_DATACENTER_CLIENTSECRET](environment.md#GCM_BITBUCKET_DATACENTER_CLIENTSECRET)**
+**另請參閱：[GCM_BITBUCKET_DATACENTER_CLIENTSECRET](environment.md#GCM_BITBUCKET_DATACENTER_CLIENTSECRET)**
 
 ---
 
 ### credential.gitHubAccountFiltering
 
-Enable or disable automatic account filtering for GitHub based on server hints
-when there are multiple available accounts. This setting is only applicable to
-GitHub.com with [Enterprise Managed Users][github-emu].
+根據伺服器提示，為 GitHub 啟用或停用自動帳號篩選當有多個可用帳號時。此設定僅適用於具有 [Enterprise Managed Users][github-emu] 的 GitHub.com。
 
-Value|Description
+值|說明
 -|-
-`true` _(default)_|Filter available accounts based on server hints.
-`false`|Show all available accounts.
+`true` _(預設)_|根據伺服器提示篩選可用帳號。
+`false`|顯示所有可用帳號。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.gitHubAccountFiltering "false"
 ```
 
-**Also see: [GCM_GITHUB_ACCOUNTFILTERING][gcm-github-accountfiltering]**
+**另請參閱：[GCM_GITHUB_ACCOUNTFILTERING][gcm-github-accountfiltering]**
 
 ---
 
 ### credential.gitHubAuthModes
 
-Override the available authentication modes presented during GitHub
-authentication. If this option is not set, then the available authentication
-modes will be automatically detected.
+覆寫 GitHub 身份驗證期間呈現的可用驗證模式。如果未設定此選項，則可用的驗證模式將會被自動偵測。
 
-**Note:** This setting supports multiple values separated by commas.
+**注意：**此設定支援以逗號分隔的多個值。
 
-Value|Authentication Mode
+值|驗證模式
 -|-
-_(unset)_|Automatically detect modes
-`oauth`|Expands to: `browser, device`
-`browser`|OAuth authentication via a web browser _(requires a GUI)_
-`device`|OAuth authentication with a device code
-`basic`|Basic authentication using username and password
-`pat`|Personal Access Token (pat)-based authentication
+_(未設定)_|自動偵測模式
+`oauth`|擴充為：`browser, device`
+`browser`|透過網頁瀏覽器的 OAuth 驗證 _(需要 GUI)_
+`device`|使用裝置碼的 OAuth 驗證
+`basic`|使用使用者名稱與密碼的基本驗證
+`pat`|個人存取權杖 (pat) 型驗證
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.gitHubAuthModes "oauth,basic"
 ```
 
-**Also see: [GCM_GITHUB_AUTHMODES][gcm-github-authmodes]**
+**另請參閱：[GCM_GITHUB_AUTHMODES][gcm-github-authmodes]**
 
 ---
 
 ### credential.gitLabAuthModes
 
-Override the available authentication modes presented during GitLab
-authentication. If this option is not set, then the available authentication
-modes will be automatically detected.
+覆寫在 GitLab 驗證期間呈現的可用驗證模式。若未設定此選項，則可用的驗證模式將會被自動偵測。
 
-**Note:** This setting supports multiple values separated by commas.
+**注意：**此設定支援以逗號分隔的多個值。
 
-Value|Authentication Mode
+值|驗證模式
 -|-
-_(unset)_|Automatically detect modes
-`browser`|OAuth authentication via a web browser _(requires a GUI)_
-`basic`|Basic authentication using username and password
-`pat`|Personal Access Token (pat)-based authentication
+_(未設定)_|自動偵測模式
+`browser`|透過網頁瀏覽器的 OAuth 驗證 _(需要 GUI)_
+`basic`|使用使用者名稱與密碼的基本驗證
+`pat`|個人存取權杖 (pat) 型驗證
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.gitLabAuthModes "browser"
 ```
 
-**Also see: [GCM_GITLAB_AUTHMODES][gcm-gitlab-authmodes]**
+**另請參閱：[GCM_GITLAB_AUTHMODES][gcm-gitlab-authmodes]**
 
 ---
 
 ### credential.namespace
 
-Use a custom namespace prefix for credentials read and written in the OS
-credential store. Credentials will be stored in the format
-`{namespace}:{service}`.
+為在作業系統中讀取與寫入的憑證使用自訂命名空間前綴憑證儲存庫。憑證將以下列格式儲存
+`{namespace}:{service}`。
 
-Defaults to the value `git`.
+預設值為 `git`。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.namespace "my-namespace"
 ```
 
-**Also see: [GCM_NAMESPACE][gcm-namespace]**
+**另請參閱：[GCM_NAMESPACE][gcm-namespace]**
 
 ---
 
 ### credential.credentialStore
 
-Select the type of credential store to use on supported platforms.
+選擇在支援的平台上使用的憑證儲存庫類型。
 
-Default value on Windows is `wincredman`, on macOS is `keychain`, and is unset
-on Linux.
+在 Windows 上的預設值為 `wincredman`，在 macOS 上為 `keychain`，且未設定在 Linux 上。
 
-**Note:** See more information about configuring secret stores in
-[cred-stores][cred-stores].
+**注意：**關於設定秘密儲存庫的更多資訊，請參閱 [cred-stores][cred-stores]。
 
-Value|Credential Store|Platforms
+值|憑證儲存庫|平台
 -|-|-
-_(unset)_|Windows: `wincredman`, macOS: `keychain`, Linux: _(none)_|-
-`wincredman`|Windows Credential Manager (not available over SSH).|Windows
-`dpapi`|DPAPI protected files. Customize the DPAPI store location with [credential.dpapiStorePath][credential-dpapistorepath]|Windows
-`keychain`|macOS Keychain.|macOS
-`secretservice`|[freedesktop.org Secret Service API][freedesktop-ss] via [libsecret][libsecret] (requires a graphical interface to unlock secret collections).|Linux
-`gpg`|Use GPG to store encrypted files that are compatible with the [pass][pass] (requires GPG and `pass` to initialize the store).|macOS, Linux
-`cache`|Git's built-in [credential cache][credential-cache].|macOS, Linux
-`plaintext`|Store credentials in plaintext files (**UNSECURE**). Customize the plaintext store location with [`credential.plaintextStorePath`][credential-plaintextstorepath].|Windows, macOS, Linux
-`none`|Do not store credentials via GCM.|Windows, macOS, Linux
+_(未設定)_|Windows：`wincredman`，macOS：`keychain`，Linux：_(無)_|-
+`wincredman`|Windows 憑證管理員 (無法透過 SSH 使用)。|Windows
+`dpapi`|DPAPI 保護的檔案。使用 [credential.dpapiStorePath][credential-dpapistorepath] 自訂 DPAPI 儲存庫位置|Windows
+`keychain`|macOS 鑰匙圈。|macOS
+`secretservice`|[freedesktop.org Secret Service API][freedesktop-ss] 透過 [libsecret][libsecret] (需要圖形介面來解鎖密碼集合)。|Linux
+`gpg`|使用 GPG 儲存與 [pass][pass] 相容的加密檔案 (需要 GPG 與 `pass` 來初始化儲存庫)。|macOS, Linux
+`cache`|Git 的內建 [credential cache][credential-cache]。|macOS, Linux
+`plaintext`|以純文字檔案儲存憑證 (**不安全**)。使用 [`credential.plaintextStorePath`][credential-plaintextstorepath] 自訂純文字儲存庫位置。|Windows, macOS, Linux
+`none`|不透過 GCM 儲存憑證。|Windows, macOS, Linux
 
-#### Example
+#### 範例
 
 ```bash
 git config --global credential.credentialStore gpg
 ```
 
-**Also see: [GCM_CREDENTIAL_STORE][gcm-credential-store]**
+**另請參閱：[GCM_CREDENTIAL_STORE][gcm-credential-store]**
 
 ---
 
 ### credential.cacheOptions
 
-Pass [options][cache-options] to the Git credential cache when
-[`credential.credentialStore`][credential-credentialstore]
-is set to `cache`. This allows you to select a different amount
-of time to cache credentials (the default is 900 seconds) by passing
-`"--timeout <seconds>"`. Use of other options like `--socket` is untested
-and unsupported, but there's no reason it shouldn't work.
+將 [options][cache-options] 傳遞至 Git 憑證快取，當 [`credential.credentialStore`][credential-credentialstore] 設為 `cache` 時。這可讓您選取不同的憑證快取時間 (預設為 900 秒)，方法是透過傳遞
+`"--timeout <seconds>"`。使用其他選項 (如 `--socket`) 尚未經過測試且不受支援，但沒有理由它無法運作。
 
-Defaults to empty.
+預設為空。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.cacheOptions "--timeout 300"
 ```
 
-**Also see: [GCM_CREDENTIAL_CACHE_OPTIONS][gcm-credential-cache-options]**
+**另請參閱：[GCM_CREDENTIAL_CACHE_OPTIONS][gcm-credential-cache-options]**
 
 ---
 
 ### credential.plaintextStorePath
 
-Specify a custom directory to store plaintext credential files in when
-[`credential.credentialStore`][credential-credentialstore] is set to `plaintext`.
+指定一個自訂目錄來儲存純文字憑證檔案，當 [`credential.credentialStore`][credential-credentialstore] 設為 `plaintext` 時。
 
-Defaults to the value `~/.gcm/store` or `%USERPROFILE%\.gcm\store`.
+預設值為 `~/.gcm/store` 或 `%USERPROFILE%\.gcm\store`。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.plaintextStorePath /mnt/external-drive/credentials
 ```
 
-**Also see: [GCM_PLAINTEXT_STORE_PATH][gcm-plaintext-store-path]**
+**另請參閱：[GCM_PLAINTEXT_STORE_PATH][gcm-plaintext-store-path]**
 
 ---
 
 ### credential.dpapiStorePath
 
-Specify a custom directory to store DPAPI protected credential files in when
-[`credential.credentialStore`][credential-credentialstore] is set to `dpapi`.
+指定一個自訂目錄來儲存受 DPAPI 保護的憑證檔案，當 [`credential.credentialStore`][credential-credentialstore] 設為 `dpapi` 時。
 
-Defaults to the value `%USERPROFILE%\.gcm\dpapi_store`.
+預設值為 `%USERPROFILE%\.gcm\dpapi_store`。
 
-#### Example
+#### 範例
 
 ```batch
 git config --global credential.dpapiStorePath D:\credentials
 ```
 
-**Also see: [GCM_DPAPI_STORE_PATH][gcm-dpapi-store-path]**
+**另請參閱：[GCM_DPAPI_STORE_PATH][gcm-dpapi-store-path]**
 
 ---
 
 ### credential.gpgPassStorePath
 
-Specify a custom directory to store GPG-encrypted [pass][pass]-compatible credential files
-in when [`credential.credentialStore`][credential-credentialstore] is set to `gpg`.
+指定一個自訂目錄，用以儲存經 GPG 加密且與 [pass][pass] 相容的憑證檔案於 [`credential.credentialStore`][credential-credentialstore] 設為 `gpg` 時。
 
-Defaults to the value `~/.password-store` or `%USERPROFILE%\.password-store`.
+預設值為 `~/.password-store` 或 `%USERPROFILE%\.password-store`。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.gpgPassStorePath /mnt/external-drive/.password-store
 ```
 
-**Note:** Location of the password store used by [pass][pass] can be overridden by the
-`PASSWORD_STORE_DIR` environment variable, see the [man page][pass-man] for details.
+**注意：** [pass][pass] 所使用的密碼儲存庫位置可被 `PASSWORD_STORE_DIR` 環境變數覆寫，詳情請參閱 [man page][pass-man]。
 
 ---
 
 ### credential.msauthFlow
 
-Specify which authentication flow should be used when performing Microsoft
-authentication and an interactive flow is required.
+指定在執行 Microsoft 驗證時，且需要互動式流程時，應使用何種驗證流程。
 
-Defaults to `auto`.
+預設為 `auto`。
 
-**Note:** If [`credential.msauthUseBroker`][credential-msauthusebroker] is set
-to `true` and the operating system authentication broker is available, all flows
-will be delegated to the broker. If both of those things are true, then the
-value of `credential.msauthFlow` has no effect.
+**注意：** 若 [`credential.msauthUseBroker`][credential-msauthusebroker] 設為 `true` 且作業系統驗證代理程式可用，則所有流程將會委派給該代理程式。如果這兩項條件都成立，則 `credential.msauthFlow` 的值將沒有任何作用。
 
-Value|Authentication Flow
+值|驗證流程
 -|-
-`auto` _(default)_|Select the best option depending on the current environment and platform.
-`embedded`|Show a window with embedded web view control.
-`system`|Open the user's default web browser.
-`devicecode`|Show a device code.
+`auto` _(預設)_|根據目前的環境與平台選取最佳選項。
+`embedded`|顯示一個內嵌網頁檢視控制項的視窗。
+`system`|開啟使用者的預設網頁瀏覽器。
+`devicecode`|顯示裝置碼。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.msauthFlow devicecode
 ```
 
-**Also see: [GCM_MSAUTH_FLOW][gcm-msauth-flow]**
+**另請參閱：[GCM_MSAUTH_FLOW][gcm-msauth-flow]**
 
 ---
 
-### credential.msauthUseBroker _(experimental)_
+### credential.msauthUseBroker _(實驗性)_
 
-Use the operating system account manager where available.
+在可用時使用作業系統帳戶管理員。
 
-Defaults to `false`. In certain cloud hosted environments when using a work or
-school account, such as [Microsoft DevBox][devbox], the default is `true`.
+預設為 `false`。在某些雲端託管環境中，當使用公司或學校帳戶時，例如 [Microsoft DevBox][devbox]，預設值為 `true`。
 
-These defaults are subject to change in the future.
+這些預設值未來可能會變更。
 
-_**Note:** before you enable this option on Windows, please review the
-[Windows Broker][wam] details for what this means to your local Windows user
-account._
+_**注意：** 在 Windows 上啟用此選項之前，請檢閱 [Windows Broker][wam] 的詳細資訊，以了解這對您本機 Windows 使用者帳戶的意義。_
 
-Value|Description
+值|說明
 -|-
-`true`|Use the operating system account manager as an authentication broker.
-`false` _(default)_|Do not use the broker.
+`true`|使用作業系統帳戶管理員作為驗證代理人。
+`false` _(預設)_|不使用代理人。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.msauthUseBroker true
 ```
 
-**Also see: [GCM_MSAUTH_USEBROKER][gcm-msauth-usebroker]**
+**另請參閱：[GCM_MSAUTH_USEBROKER][gcm-msauth-usebroker]**
 
 ---
 
-### credential.msauthUseDefaultAccount _(experimental)_
+### credential.msauthUseDefaultAccount _(實驗性)_
 
-Use the current operating system account by default when the broker is enabled.
+當代理人啟用時，預設使用目前的作業系統帳戶。
 
-Defaults to `false`. In certain cloud hosted environments when using a work or
-school account, such as [Microsoft DevBox][devbox], the default is `true`.
+預設為 `false`。在某些雲端託管環境中，當使用公司或學校帳戶時，例如 [Microsoft DevBox][devbox]，預設值為 `true`。
 
-These defaults are subject to change in the future.
+這些預設值未來可能會變更。
 
-Value|Description
+值|說明
 -|-
-`true`|Use the current operating system account by default.
-`false` _(default)_|Do not assume any account to use by default.
+`true`|預設使用目前的作業系統帳戶。
+`false` _(預設)_|預設不假設使用任何帳戶。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.msauthUseDefaultAccount true
 ```
 
-**Also see: [GCM_MSAUTH_USEDEFAULTACCOUNT][gcm-msauth-usedefaultaccount]**
+**另請參閱：[GCM_MSAUTH_USEDEFAULTACCOUNT][gcm-msauth-usedefaultaccount]**
 
 ---
 
 ### credential.useHttpPath
 
-Tells Git to pass the entire repository URL, rather than just the hostname, when
-calling out to a credential provider. (This setting
-[comes from Git itself][use-http-path], not GCM.)
+告知 Git 傳遞整個儲存庫 URL，而不僅僅是主機名稱，當呼叫憑證提供者時。（此設定[來自 Git 本身][use-http-path]，而非 GCM。）
 
-Defaults to `false`.
+預設為 `false`。
 
-**Note:** GCM sets this value to `true` for `dev.azure.com` (Azure Repos) hosts
-after installation by default.
+**注意：** GCM 預設會在安裝後，為 `dev.azure.com` (Azure Repos) 主機將此值設定為 `true`。
 
-This is because `dev.azure.com` alone is not enough information to determine the
-correct Azure authentication authority - we require a part of the path. The
-fallout of this is that for `dev.azure.com` remote URLs we do not support
-storing credentials against the full-path. We always store against the
-`dev.azure.com/org-name` stub.
+這是因為僅憑 `dev.azure.com` 的資訊不足以判斷正確的 Azure 驗證授權單位 - 我們需要路徑的一部分。其後果是，對於 `dev.azure.com` 遠端 URL，我們不支援針對完整路徑儲存憑證。我們總是針對 `dev.azure.com/org-name` 存根進行儲存。
 
-In order to use Azure Repos and store credentials against a full-path URL, you
-must use the `org-name.visualstudio.com` remote URL format instead.
+為了使用 Azure Repos 並針對完整路徑 URL 儲存憑證，您必須改用 `org-name.visualstudio.com` 遠端 URL 格式。
 
-Value|Git Behavior
+值|Git 行為
 -|-
-`false` _(default)_|Git will use only `user` and `hostname` to look up credentials.
-`true`|Git will use the full repository URL to look up credentials.
+`false` _(預設)_|Git 將僅使用 `user` 和 `hostname` 來查詢憑證。
+`true`|Git 將使用完整的儲存庫 URL 來查詢憑證。
 
-#### Example
+#### 範例
 
-On Windows using GitHub, for a user whose login is `alice`, and with
-`credential.useHttpPath` set to `false` (or not set), the following remote URLs
-will use the same credentials:
+在 Windows 上使用 GitHub，對於登入名稱為 `alice` 的使用者，且 `credential.useHttpPath` 設為 `false` (或未設定)，下列遠端 URL 將使用相同的憑證：
 
 ```text
 Credential: "git:https://github.com" (user = alice)
@@ -797,8 +704,7 @@ Credential: "git:https://bob@github.com" (user = bob)
    https://bob@github.com/example/myrepo
 ```
 
-Under the same user but with `credential.useHttpPath` set to `true`, these
-credentials would be used:
+在相同使用者下，但將 `credential.useHttpPath` 設為 `true`，這些憑證將被使用：
 
 ```text
 Credential: "git:https://github.com/foo/bar" (user = alice)
@@ -829,204 +735,176 @@ Credential: "git:https://bob@github.com/example/myrepo" (user = bob)
 
 ### credential.azreposCredentialType
 
-Specify the type of credential the Azure Repos host provider should return.
+指定 Azure Repos 主機提供者應傳回的憑證類型。
 
-Defaults to the value `pat`. In certain cloud hosted environments when using a
-work or school account, such as [Microsoft DevBox][devbox], the default value is
-`oauth`.
+預設值為 `pat`。在某些雲端託管環境中，當使用公司或學校帳戶時，例如 [Microsoft DevBox][devbox]，預設值為 `oauth`。
 
-Value|Description
+值|說明
 -|-
-`pat`|Azure DevOps personal access tokens
-`oauth`|Microsoft identity OAuth tokens (AAD or MSA tokens)
+`pat`|Azure DevOps 個人存取權杖
+`oauth`|Microsoft 身分識別 OAuth 權杖 (AAD 或 MSA 權杖)
 
-Here is more information about [Azure Access tokens][azure-tokens].
+更多關於 [Azure Access tokens][azure-tokens] 的資訊。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.azreposCredentialType oauth
 ```
 
-**Also see: [GCM_AZREPOS_CREDENTIALTYPE][gcm-azrepos-credentialtype]**
+**另請參閱：[GCM_AZREPOS_CREDENTIALTYPE][gcm-azrepos-credentialtype]**
 
 ---
 
 ### credential.azreposManagedIdentity
 
-Use a [Managed Identity][managed-identity] to authenticate with Azure Repos.
+使用 [Managed Identity][managed-identity] 向 Azure Repos 進行驗證。
 
-The value `system` will tell GCM to use the system-assigned Managed Identity.
+值 `system` 會告知 GCM 使用系統指派的受控識別。
 
-To specify a user-assigned Managed Identity, use the format `id://{clientId}`
-where `{clientId}` is the client ID of the Managed Identity. Alternatively any
-GUID-like value will also be interpreted as a user-assigned Managed Identity
-client ID.
+若要指定使用者指派的受控識別，請使用 `id://{clientId}` 格式其中 `{clientId}` 是受控識別的用戶端 ID。或者，任何類似 GUID 的值也將被解譯為使用者指派的受控識別用戶端 ID。
 
-To specify a Managed Identity associated with an Azure resource, you can use the
-format `resource://{resourceId}` where `{resourceId}` is the ID of the resource.
+若要指定與 Azure 資源相關聯的受控識別，您可以使用 `resource://{resourceId}` 格式，其中 `{resourceId}` 是資源的 ID。
 
-For more information about managed identities, see the Azure DevOps
-[documentation][azrepos-sp-mid].
+更多關於受控識別的資訊，請參閱 Azure DevOps [文件][azrepos-sp-mid]。
 
-Value|Description
+值|說明
 -|-
-`system`|System-Assigned Managed Identity
-`[guid]`|User-Assigned Managed Identity with the specified client ID
-`id://[guid]`|User-Assigned Managed Identity with the specified client ID
-`resource://[guid]`|User-Assigned Managed Identity for the associated resource
+`system`|系統指派的受控識別
+`[guid]`|具有指定用戶端 ID 的使用者指派受控識別
+`id://[guid]`|具有指定用戶端 ID 的使用者指派受控識別
+`resource://[guid]`|關聯資源的使用者指派受控識別
 
 ```shell
 git config --global credential.azreposManagedIdentity "id://11111111-1111-1111-1111-111111111111"
 ```
 
-**Also see: [GCM_AZREPOS_MANAGEDIDENTITY][gcm-azrepos-credentialmanagedidentity]**
+**另請參閱：[GCM_AZREPOS_MANAGEDIDENTITY][gcm-azrepos-credentialmanagedidentity]**
 
 ---
 
 ### credential.azreposServicePrincipal
 
-Specify the client and tenant IDs of a [service principal][service-principal]
-to use when performing Microsoft authentication for Azure Repos.
+指定 [服務主體][service-principal] 的用戶端和租用戶 ID 在為 Azure Repos 執行 Microsoft 驗證時使用。
 
-The value of this setting should be in the format: `{tenantId}/{clientId}`.
+此設定的值應為 `{tenantId}/{clientId}` 格式。
 
-You must also set at least one authentication mechanism if you set this value:
+如果您設定此值，則還必須設定至少一種驗證機制：
 
 - [credential.azreposServicePrincipalSecret][credential-azrepos-sp-secret]
 - [credential.azreposServicePrincipalCertificateThumbprint][credential-azrepos-sp-cert-thumbprint]
 - [credential.azreposServicePrincipalCertificateSendX5C][credential-azrepos-sp-cert-x5c]
 
-For more information about service principals, see the Azure DevOps
-[documentation][azrepos-sp-mid].
+如需有關服務主體的更多資訊，請參閱 Azure DevOps [文件][azrepos-sp-mid]。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.azreposServicePrincipal "11111111-1111-1111-1111-111111111111/22222222-2222-2222-2222-222222222222"
 ```
 
-**Also see: [GCM_AZREPOS_SERVICE_PRINCIPAL][gcm-azrepos-service-principal]**
+**另請參閱：[GCM_AZREPOS_SERVICE_PRINCIPAL][gcm-azrepos-service-principal]**
 
 ---
 
 ### credential.azreposServicePrincipalSecret
 
-Specifies the client secret for the [service principal][service-principal] when
-performing Microsoft authentication for Azure Repos with
-[credential.azreposServicePrincipalSecret][credential-azrepos-sp] set.
+指定 [服務主體][service-principal] 的用戶端密碼，當為 Azure Repos 執行 Microsoft 驗證，且 [credential.azreposServicePrincipalSecret][credential-azrepos-sp] 已設定時。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.azreposServicePrincipalSecret "da39a3ee5e6b4b0d3255bfef95601890afd80709"
 ```
 
-**Also see: [GCM_AZREPOS_SP_SECRET][gcm-azrepos-sp-secret]**
+**另請參閱：[GCM_AZREPOS_SP_SECRET][gcm-azrepos-sp-secret]**
 
 ---
 
 ### credential.azreposServicePrincipalCertificateThumbprint
 
-Specifies the thumbprint of a certificate to use when authenticating as a
-[service principal][service-principal] for Azure Repos when
-[GCM_AZREPOS_SERVICE_PRINCIPAL][credential-azrepos-sp] is set.
+指定憑證的指紋，用於當[服務主體][service-principal] 為 Azure Repos 進行驗證，且 [GCM_AZREPOS_SERVICE_PRINCIPAL][credential-azrepos-sp] 已設定時。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.azreposServicePrincipalCertificateThumbprint "9b6555292e4ea21cbc2ebd23e66e2f91ebbe92dc"
 ```
 
-**Also see: [GCM_AZREPOS_SP_CERT_THUMBPRINT][gcm-azrepos-sp-cert-thumbprint]**
+**另請參閱：[GCM_AZREPOS_SP_CERT_THUMBPRINT][gcm-azrepos-sp-cert-thumbprint]**
 
 ---
 
 ### credential.azreposServicePrincipalCertificateSendX5C
 
-When using a certificate for [service principal][service-principal] authentication, this configuration
-specifies whether the X5C claim should be should be sent to the STS. Sending the x5c
-enables application developers to achieve easy certificate rollover in Azure AD:
-this method will send the public certificate to Azure AD along with the token request,
-so that Azure AD can use it to validate the subject name based on a trusted issuer
-policy. This saves the application admin from the need to explicitly manage the
-certificate rollover. For details see [https://aka.ms/msal-net-sni](https://aka.ms/msal-net-sni).
+當使用憑證進行 [服務主體][service-principal] 驗證時，此設定指定是否應將 X5C 宣告傳送至 STS。傳送 x5c 可讓應用程式開發人員在 Azure AD 中輕鬆實現憑證輪替：此方法會將公開憑證連同權杖請求一起傳送至 Azure AD，以便 Azure AD 能根據受信任的簽發者原則來驗證主體名稱。這讓應用程式管理員無需明確管理憑證輪替。詳情請參閱 [https://aka.ms/msal-net-sni](https://aka.ms/msal-net-sni)。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global credential.azreposServicePrincipalCertificateSendX5C true
 ```
-**Also see: [GCM_AZREPOS_SP_CERT_SEND_X5C][gcm-azrepos-sp-cert-x5c]**
+**另請參閱：[GCM_AZREPOS_SP_CERT_SEND_X5C][gcm-azrepos-sp-cert-x5c]**
 
 ---
 
 ### trace2.normalTarget
 
-Turns on Trace2 Normal Format tracing - see [Git's Trace2 Normal Format
-documentation][trace2-normal-docs] for more details.
+開啟 Trace2 一般格式追蹤 - 請參閱 [Git 的 Trace2 一般格式文件][trace2-normal-docs] 以取得更多詳細資訊。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global trace2.normalTarget true
 ```
 
-If the value of `trace2.normalTarget` is a full path to a file in an existing
-directory, logs are appended to the file.
+如果 `trace2.normalTarget` 的值是位於現有目錄中檔案的完整路徑，日誌將會附加至該檔案。
 
-If the value of `trace2.normalTarget` is `true` or `1`, logs are written to
-standard error.
+如果 `trace2.normalTarget` 的值為 `true` 或 `1`，日誌會寫入至標準錯誤。
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GIT_TRACE2][trace2-normal-env]**
+**另請參閱：[GIT_TRACE2][trace2-normal-env]**
 
 ---
 
 ### trace2.eventTarget
 
-Turns on Trace2 Event Format tracing - see [Git's Trace2 Event Format
-documentation][trace2-event-docs] for more details.
+開啟 Trace2 事件格式追蹤 - 請參閱 [Git 的 Trace2 事件格式文件][trace2-event-docs] 以取得更多詳細資訊。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global trace2.eventTarget true
 ```
 
-If the value of `trace2.eventTarget` is a full path to a file in an existing
-directory, logs are appended to the file.
+如果 `trace2.eventTarget` 的值是位於現有目錄中檔案的完整路徑，日誌將會附加至該檔案。
 
-If the value of `trace2.eventTarget` is `true` or `1`, logs are written to
-standard error.
+如果 `trace2.eventTarget` 的值為 `true` 或 `1`，日誌將會寫入標準錯誤輸出。
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GIT_TRACE2_EVENT][trace2-event-env]**
+**另請參閱：[GIT_TRACE2_EVENT][trace2-event-env]**
 
 ---
 
 ### trace2.perfTarget
 
-Turns on Trace2 Performance Format tracing - see [Git's Trace2 Performance
-Format documentation][trace2-performance-docs] for more details.
+開啟 Trace2 效能格式追蹤 - 請參閱 [Git 的 Trace2 效能格式文件][trace2-performance-docs] 以取得更多詳細資訊。
 
-#### Example
+#### 範例
 
 ```shell
 git config --global trace2.perfTarget true
 ```
 
-If the value of `trace2.perfTarget` is a full path to a file in an existing
-directory, logs are appended to the file.
+如果 `trace2.perfTarget` 的值為一個位於現有目錄中檔案的完整路徑，日誌將會附加到該檔案。
 
-If the value of `trace2.perfTarget` is `true` or `1`, logs are written to
-standard error.
+如果 `trace2.perfTarget` 的值為 `true` 或 `1`，日誌將會寫入標準錯誤輸出。
 
-Defaults to disabled.
+預設為停用。
 
-**Also see: [GIT_TRACE2_PERF][trace2-performance-env]**
+**另請參閱：[GIT_TRACE2_PERF][trace2-performance-env]**
 
 [auto-detection]: autodetect.md
 [azure-tokens]: azrepos-users-and-tokens.md

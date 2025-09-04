@@ -1,98 +1,78 @@
-# Git Credential Manager Rename
+# Git Credential Manager 更名
 
-In November 2021, _"Git Credential Manager Core"_ was [renamed][rename-pr] to
-simply _"Git Credential Manager"_, dropping the "Core" moniker. We announced the
-new name in a [GitHub blog post][rename-blog], along with the new home for the
-project in its own [organization][gcm-org].
+在 2021 年 11 月，_「Git Credential Manager Core」_ [更名為][rename-pr] _"Git Credential Manager"_，移除了 "Core" 這個名稱。我們在一篇 [GitHub 部落格文章][rename-blog] 中宣布了新名稱，同時也公布了該專案位於其專屬 [組織][gcm-org] 的新家。
 
-![Git Credential Manager Core renamed](img/gcmcore-rename.png)
+![Git Credential Manager Core 更名](img/gcmcore-rename.png)
 
-At the time, the actual exectuable name was not updated and continued to be
-`git-credential-manager-core`. As of [2.0.877][rename-ver], the executable has
-been renamed to `git-credential-manager`, matching the new project name.
+當時，實際的執行檔名稱並未更新，仍然是 `git-credential-manager-core`。自 [2.0.877][rename-ver] 版本起，執行檔已更名為 `git-credential-manager`，與新的專案名稱一致。
 
 ---
 
 :warning: **Update:** :warning:
 
-As of [2.3.0][no-symlink-ver] the `git-credential-manager-core` symlinks have been
-removed.
+自 [2.3.0][no-symlink-ver] 版本起，`git-credential-manager-core` 的符號連結已被移除。
 
-If you have not updated your configuration you will see error messages similar to:
+若您尚未更新設定，將會看到類似以下的錯誤訊息：
 
 ```console
 git: 'credential-manager-core' is not a git command. See 'git --help'.
 ```
 
-To fix your configuration, please follow the [instructions][instructions] below.
+要修正您的設定，請依照下方的 [說明][instructions] 操作。
 
 ---
 
-## Rename transition
+## 更名過渡期
 
-If you continue to use the `git-credential-manager-core` executable name you may
-see warning messages like below:
+若您繼續使用 `git-credential-manager-core` 這個執行檔名稱，您可能會看到如下的警告訊息：
 
 ```console
 warning: git-credential-manager-core was renamed to git-credential-manager
 warning: see https://aka.ms/gcm/rename for more information
 ```
 
-Since the executable was renamed in 2.0.877, GCM has also included symlinks
-using the old name in order to ensure no one's setups would immediately break.
+自 2.0.877 版本執行檔更名以來，GCM 也包含了使用舊名稱的符號連結，以確保任何人的設定不會立即中斷。
 
-These links will remain until _two_ major Git versions are released after GCM
-2.0.877, _**at which point the symlinks will no longer be included**_.
+這些連結將會保留，直到 GCM 2.0.877 之後發布 _兩個_ 主要的 Git 版本為止，2.0.877，_**屆時將不再包含這些符號連結**_。
 
-It is recommended to update your Git configuration to use the new executable
-name as soon as possible to prevent any issues in the future.
+建議您盡快更新您的 Git 設定，以使用新的執行檔名稱，以避免未來發生任何問題。
 
-## How to update
+## 如何更新
 
 ### Git for Windows
 
-If you are using GCM bundled with Git for Windows (recommended), you should make
-sure you have updated to the latest version.
+若您正在使用與 Git for Windows 捆綁的 GCM (建議方式)，您應確保您已更新至最新版本。
 
-[Download the latest Git for Windows ⬇️][git-windows]
+[下載最新版 Git for Windows ⬇️][git-windows]
 
-### Windows standalone installer
+### Windows 獨立安裝程式
 
-If you are using GCM installed either by the user (`gcmuser-*.exe`) or system
-(`gcm-*.exe`) installers on Windows, you should uninstall the current version
-first and then download and install the [latest version][gcm-latest].
+若您是透過使用者 (`gcmuser-*.exe`) 或系統 (`gcm-*.exe`) 安裝程式在 Windows 上安裝 GCM，您應先解除安裝目前的版本，然後再下載並安裝 [最新版本][gcm-latest]。
 
-Uninstall instructions for your Windows version can be found
-[here][win-standalone-instr].
+適用於您 Windows 版本的解除安裝說明可以在[這裡][win-standalone-instr] 找到。
 
 ### macOS Homebrew
 
-> **Note:** As of October 2022 the old `git-credential-manager-core` cask name
-> is still used. In the future we plan to rename the package to drop the `-core`
-> suffix.
+> **注意：** 自 2022 年 10 月起，舊的 `git-credential-manager-core` cask 名稱仍在使用中。未來我們計劃將套件更名，移除 `-core` 後綴。
 
-If you use Homebrew to install GCM on macOS you should use `brew upgrade` to
-install the latest version.
+若您使用 Homebrew 在 macOS 上安裝 GCM，您應使用 `brew upgrade` 來安裝最新版本。
 
 ```sh
 brew upgrade git-credential-manager-core
 ```
 
-### macOS package
+### macOS 套件
 
-If you use the .pkg file to install GCM on macOS, you should first uninstall the
-current version, and then install the [latest package][gcm-latest].
+若您使用 .pkg 檔案在 macOS 上安裝 GCM，您應先解除安裝目前的版本，然後再安裝 [最新的套件][gcm-latest]。
 
 ```sh
 sudo /usr/local/share/gcm-core/uninstall.sh
 installer -pkg <path-to-new-package> -target /
 ```
 
-### Linux Debian package
+### Linux Debian 套件
 
-If you use the .deb Debian package to install GCM on Linux, you should first
-`unconfigure` the current version, uninstall the package, and then install and
-`configure` the [latest version][gcm-latest].
+如果您在 Linux 上使用 .deb Debian 套件安裝 GCM，您應該先 `unconfigure` 目前的版本，解除安裝套件，然後安裝並 `configure` [最新版本][gcm-latest]。
 
 ```sh
 git-credential-manager-core unconfigure
@@ -103,9 +83,7 @@ git-credential-manager configure
 
 ### Linux tarball
 
-If you are using the pre-built GCM binaries on Linux from our tarball, you
-should first `unconfigure` the current version before extracting the [latest
-binaries][gcm-latest].
+如果您正在使用我們 tarball 中預先建構的 GCM Linux 二進位檔，您應該先 `unconfigure` 目前的版本，然後再解壓縮 [最新的二進位檔][gcm-latest]。
 
 ```sh
 git-credential-manager-core unconfigure
@@ -114,20 +92,17 @@ tar -xvf <path-to-new-tarball> -C /usr/local/bin
 git-credential-manager configure
 ```
 
-### Troubleshooting
+### 疑難排解
 
-If after updating your GCM installations if you are still seeing the
-[warning][warnings] messages you can try manually editing your Git configuration
-to point to the correct GCM executable name.
+如果在更新 GCM 安裝後，您仍然看到[警告][warnings] 訊息，您可以嘗試手動編輯您的 Git 設定以指向正確的 GCM 執行檔名稱。
 
-Start by listing all Git configuration for `credential.helper`, including which
-files the particular config entries are located in, using the following command:
+首先，使用以下指令列出所有關於 `credential.helper` 的 Git 設定，包括特定設定項目所在的檔案：
 
 ```sh
 git config --show-origin --get-all credential.helper
 ```
 
-On Mac or Linux you should see something like this:
+在 Mac 或 Linux 上，您應該會看到類似這樣的內容：
 
 <!-- markdownlint-disable MD010 -->
 ```shell-session
@@ -137,7 +112,7 @@ file:/Users/jdoe/.gitconfig	credential.helper=
 file:/Users/jdoe/.gitconfig	credential.helper=/usr/local/share/gcm-core/git-credential-manager-core
 ```
 
-On Windows you should see something like this:
+在 Windows 上，您應該會看到類似這樣的內容：
 
 ```shell-session
 > git config --show-origin --get-all credential.helper
@@ -145,13 +120,9 @@ file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager-core
 ```
 <!-- markdownlint-enable MD010 -->
 
-Look out for entries that include `git-credential-manager-core` or
-`manager-core`; these should be replaced and updated to `git-credential-manager`
-or `manager` respectively.
+請留意包含 `git-credential-manager-core` 或 `manager-core` 的項目；這些項目應該被取代並更新為 `git-credential-manager` 或分別更新為 `manager`。
 
-> **Note:** When updating the Git configuration file in your home directory
-> (`$HOME/.gitconfig` or `%USERPROFILE%\.gitconfig`) you should ensure there are
-> is an additional blank entry for `credential.helper` before the GCM entry.
+> **注意：** 當更新您家目錄中的 Git 設定檔 (`$HOME/.gitconfig` 或 `%USERPROFILE%\.gitconfig`) 時，您應確保有在 GCM 項目之前有一個額外的空白 `credential.helper` 項目。
 >
 > **Mac/Linux**
 >
@@ -169,9 +140,7 @@ or `manager` respectively.
 >     helper = C:/Program\\ Files\\ \\(x86\\)/Git\\ Credential\\ Manager/git-credential-manager.exe
 > ```
 >
-> The blank entry is important as it makes sure GCM is the only credential
-> helper that is configured, and overrides any helpers configured at the system/
-> machine-wide level.
+> 這個空白項目很重要，因為它能確保 GCM 是唯一設定的憑證輔助程式，並覆寫任何在系統層級/全機層級設定的輔助程式。
 
 [rename-pr]: https://github.com/git-ecosystem/git-credential-manager/pull/541
 [rename-blog]: https://github.blog/2022-04-07-git-credential-manager-authentication-for-everyone/#universal-git-authentication

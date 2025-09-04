@@ -1,77 +1,72 @@
-# Development and debugging
+# 開發與除錯
 
-Start by cloning this repository:
+首先複製此儲存庫：
 
 ```shell
 git clone https://github.com/git-ecosystem/git-credential-manager
 ```
 
-You also need the latest version of the .NET SDK which can be downloaded and
-installed from the [.NET website][dotnet-web].
+您還需要最新版的 .NET SDK，可以從 [.NET 網站][dotnet-web] 下載並安裝。
 
-## Building
+## 建構
 
-The `Git-Credential-Manager.sln` solution can be opened and built in Visual
-Studio, Visual Studio for Mac, Visual Studio Code, or JetBrains Rider.
+`Git-Credential-Manager.sln` 解決方案可以在 Visual
+Studio、Visual Studio for Mac、Visual Studio Code 或 JetBrains Rider 中開啟與建構。
 
 ### macOS
 
-To build from inside an IDE, make sure to select the `MacDebug` or `MacRelease`
-solution configurations.
+若要從 IDE 內部建構，請務必選取 `MacDebug` 或 `MacRelease` 解決方案組態。
 
-To build from the command line, run:
+若要從指令列建構，請執行：
 
 ```shell
 dotnet build -c MacDebug
 ```
 
-You can find a copy of the installer .pkg file in `out/osx/Installer.Mac/pkg/Debug`.
+您可以在 `out/osx/Installer.Mac/pkg/Debug` 中找到安裝程式 .pkg 檔案的複本。
 
-The flat binaries can also be found in `out/osx/Installer.Mac/pkg/Debug/payload`.
+扁平二進位檔也可以在 `out/osx/Installer.Mac/pkg/Debug/payload` 中找到。
 
 ### Windows
 
-To build from inside an IDE, make sure to select the `WindowsDebug` or
-`WindowsRelease` solution configurations.
+若要從 IDE 內部建構，請務必選取 `WindowsDebug` 或
+`WindowsRelease` 解決方案組態。
 
-To build from the command line, run:
+若要從指令列建構，請執行：
 
 ```powershell
 dotnet build -c WindowsDebug
 ```
 
-You can find a copy of the installer .exe file in `out\windows\Installer.Windows\bin\Debug\net472`.
+您可以在 `out\windows\Installer.Windows\bin\Debug\net472` 中找到安裝程式 .exe 檔案的複本。
 
-The flat binaries can also be found in `out\windows\Payload.Windows\bin\Debug\net472\win-x86`.
+扁平二進位檔也可以在 `out\windows\Payload.Windows\bin\Debug\net472\win-x86` 中找到。
 
 ### Linux
 
-The two available solution configurations are `LinuxDebug` and `LinuxRelease`.
+可用的兩種解決方案組態為 `LinuxDebug` 和 `LinuxRelease`。
 
-To build from the command line, run:
+若要從指令列建構，請執行：
 
 ```shell
 dotnet build -c LinuxDebug
 ```
 
-If you want to build for a specific architecture, you can provide `linux-x64` or `linux-arm64` or `linux-arm` as the runtime:
+如果您想為特定架構建構，可以提供 `linux-x64`、`linux-arm64` 或 `linux-arm` 作為執行階段：
 
 ```shell
 dotnet build -c LinuxDebug -r linux-arm64
 ```
 
-You can find a copy of the Debian package (.deb) file in `out/linux/Packaging.Linux/deb/Debug`.
+您可以在 `out/linux/Packaging.Linux/deb/Debug` 中找到 Debian 套件 (.deb) 檔案的複本。
 
-The flat binaries can also be found in `out/linux/Packaging.Linux/payload/Debug`.
+扁平二進位檔也可以在 `out/linux/Packaging.Linux/payload/Debug` 中找到。
 
-## Debugging
+## 除錯
 
-To debug from inside an IDE you'll want to set `Git-Credential-Manager` as the
-startup project, and specify one of `get`, `store`, or `erase` as a program
-argument.
+若要從 IDE 內部除錯，您需要將 `Git-Credential-Manager` 設定為啟始專案，並指定 `get`、`store` 或 `erase` 其中之一作為程式引數。
 
-To simulate Git interacting with GCM, when you start from your IDE of choice,
-you'll need to enter the following [information over standard input][ioformat]:
+若要模擬 Git 與 GCM 的互動，當您從選擇的 IDE 啟動時，您需要在[標準輸入][ioformat]中輸入以下資訊：
 
 ```text
 protocol=http<LF>
@@ -80,41 +75,32 @@ host=<HOSTNAME><LF>
 <LF>
 ```
 
-..where `<HOSTNAME>` is a supported hostname such as `github.com`, and `<LF>` is
-a line feed (or CRLF, we support both!).
+..其中 `<HOSTNAME>` 是支援的主機名稱，例如 `github.com`，而 `<LF>` 是換行符（或 CRLF，我們兩者都支援！）。
 
-You may also include the following optional fields, depending on your scenario:
+根據您的情境，您可能還需要包含以下可選欄位：
 
 ```text
 username=<USERNAME><LF>
 password=<PASSWORD><LF>
 ```
 
-For more information about how Git interacts with credential helpers, please
-read Git's documentation on [custom helpers][custom-helpers].
+有關 Git 如何與憑證輔助程式互動的更多資訊，請閱讀 Git 關於[自訂輔助程式][custom-helpers]的文件。
 
-### Attaching to a running process
+### 附加到執行中的程序
 
-If you want to debug an already running GCM process, set the `GCM_DEBUG`
-environment variable to `1` or `true`. The process will wait on launch for a
-debugger to attach before continuing.
+如果您想對一個已在執行的 GCM 程序進行除錯，請設定 `GCM_DEBUG` 環境變數為 `1` 或 `true`。該程序將在啟動時等待除錯器附加後才會繼續執行。
 
-This is useful when debugging interactions between GCM and Git, and you want
-Git to be the one launching us.
+這在除錯 GCM 與 Git 之間的互動時很有用，而且您希望由 Git 來啟動我們。
 
-### Collect trace output
+### 收集追蹤輸出
 
-GCM has two tracing systems - one that is distinctly GCM's and one that
-implements certain features of [Git's Trace2 API][trace2]. Below are
-instructions for how to use each.
+GCM 有兩個追蹤系統——一個是 GCM 專屬的，另一個則是實作了 [Git 的 Trace2 API][trace2] 的某些功能。以下是如何使用這兩種系統的說明。
 
 #### `GCM_TRACE`
 
-If you want to debug a release build or installation of GCM, you can set the
-`GCM_TRACE` environment variable to `1` to print trace information to standard
-error, or to an absolute file path to write trace information to a file.
+如果你想對 GCM 的發行版本或安裝進行除錯，可以設定 `GCM_TRACE` 環境變數為 `1`，將追蹤資訊印到標準錯誤，或設為一個絕對檔案路徑，將追蹤資訊寫入檔案。
 
-For example:
+例如：
 
 ```shell
 $ GCM_TRACE=1 git-credential-manager version
@@ -122,130 +108,109 @@ $ GCM_TRACE=1 git-credential-manager version
 > Git Credential Manager version 2.0.124-beta+e1ebbe1517 (macOS, .NET 5.0)
 ```
 
-#### Git's Trace2 API
+#### Git 的 Trace2 API
 
-This API can also be used to print debug, performance, and telemetry information
-to stderr or a file in various formats.
+此 API 也可用於印出除錯、效能與遙測資訊到 stderr 或檔案中，並支援多種格式。
 
-##### Supported format targets
+##### 支援的格式目標
 
-1. The Normal Format Target: Similar to `GCM_TRACE`, this target writes
-human-readable output and is best suited for debugging. It can be enabled via
-environment variable or config, for example:
+1. 一般格式目標：類似於 `GCM_TRACE`，此目標會寫入人類可讀的輸出，最適合用於除錯。可透過環境變數或設定檔啟用，例如：
 
     ```shell
     export GIT_TRACE2=1
     ```
 
-    or
+    或
 
     ```shell
     git config --global trace2.normalTarget ~/log.normal
     ```
 
-0. The Performance Format Target: This format is column-based and geared toward
-analyzing performance during development and testing. It can be enabled via
-environment variable or config, for example:
+0. 效能格式目標：此格式為欄位式，旨在分析開發與測試期間的效能。可透過環境變數或設定檔啟用，例如：
 
     ```shell
     export GIT_TRACE2_PERF=1
     ```
 
-    or
+    或
 
     ```shell
     git config --global trace2.perfTarget ~/log.perf
     ```
 
-0. The Event Format Target: This format is json-based and is geared toward
-collection of large quantities of data for advanced analysis. It can be enabled
-via environment variable or config, for example:
+0. 事件格式目標：此格式為 JSON 式，旨在收集大量資料以進行進階分析。可透過環境變數或設定檔啟用，例如：
 
     ```shell
     export GIT_TRACE2_EVENT=1
     ```
 
-    or
+    或
 
     ```shell
     git config --global trace2.eventTarget ~/log.event
     ```
 
-You can read more about each of these format targets in the [corresponding
-section][trace2-targets] of Git's Trace2 API documentation.
+您可以在 Git 的 Trace2 API 文件中 [相對應的章節][trace2-targets] 閱讀關於各個格式目標的更多資訊。
 
-##### Supported events
+##### 支援的事件
 
-The below describes, at a high level, the Trace2 API events that are currently
-supported in GCM and the information they provide:
+以下概括描述了目前在 GCM 中支援的 Trace2 API 事件，以及它們所提供的資訊：
 
-1. `version`: contains the version of the current executable (e.g. GCM or a
-helper exe)
-0. `start`: contains the complete argv received by current executable's `Main()`
-method
-0. `exit`: contains current executable's exit code
-0. `child_start`: describes a child process that is about to be spawned
-0. `child_exit`: describes a child process at exit
-0. `region_enter`: describes a region (e.g. a timer for a section of code that
-is interesting) on entry
-0. `region_leave`: describes a region on leaving
+1. `version`：包含目前可執行檔（例如 GCM 或某個輔助執行檔）的版本
+0. `start`：包含目前可執行檔的 `Main()` 方法所收到的完整 argv
+0. `exit`：包含目前可執行檔的離開碼
+0. `child_start`：描述一個即將被生成的子程序
+0. `child_exit`：描述一個子程序在離開時的狀態
+0. `region_enter`：描述一個區域（例如，一段值得關注的程式碼的計時器）的進入事件
+0. `region_leave`：描述離開一個區域時的狀態
 
-You can read more about each of these format targets in the [corresponding
-section][trace2-events] of Git's Trace2 API documentation.
+您可以在 [對應的章節][trace2-events] 中，閱讀更多關於 Git Trace2 API 文件中各個事件的資訊。
 
-Want to see more events? Consider contributing! We'd :love: to see your
-awesome work in support of building out this API.
+想看到更多事件嗎？歡迎貢獻！我們 :love: 看到您的傑出貢獻，一同支援建構此 API。
 
-### Code coverage metrics
+### 程式碼覆蓋率指標
 
-If you want code coverage metrics these can be generated either from the command
-line:
+如果您想要程式碼覆蓋率指標，可以從指令列產生：
 
 ```shell
 dotnet test --collect:"XPlat Code Coverage" --settings=./.code-coverage/coverlet.settings.xml
 ```
 
-Or via the VSCode Terminal/Run Task:
+或透過 VSCode 終端機/執行工作：
 
 ```console
 test with coverage
 ```
 
-HTML reports can be generated using ReportGenerator, this should be installed
-during the build process, from the command line:
+HTML 報告可透過 ReportGenerator 產生，它應該在建構過程中從指令列安裝：
 
 ```shell
 dotnet ~/.nuget/packages/reportgenerator/*/*/net8.0/ReportGenerator.dll -reports:./**/TestResults/**/coverage.cobertura.xml -targetdir:./out/code-coverage
 ```
 
-or
+或
 
 ```shell
 dotnet {$env:USERPROFILE}/.nuget/packages/reportgenerator/*/*/net8.0/ReportGenerator.dll -reports:./**/TestResults/**/coverage.cobertura.xml -targetdir:./out/code-coverage
 ```
 
-Or via VSCode Terminal/Run Task:
+或透過 VSCode 終端機/執行工作：
 
 ```console
 report coverage - nix
 ```
 
-or
+或
 
 ```console
 report coverage - win
 ```
 
-## Linting Documentation
+## 文件語法檢查
 
-Documents are linted using [markdownlint][markdownlint] which can be installed
-as a CLI tool via NPM or as an [extension in VSCode][vscode-markdownlint]. See
-the [documentation on GitHub][markdownlint]. The configuration used for
-markdownlint is in [.markdownlint.jsonc][markdownlint-config].
+文件是使用 [markdownlint][markdownlint] 進行語法檢查，它可以安裝為透過 NPM 安裝的 CLI 工具，或作為 [VSCode 中的擴充功能][vscode-markdownlint]。請參閱 GitHub 上的[文件][markdownlint]。用於 markdownlint 的設定檔位於 [.markdownlint.jsonc][markdownlint-config] 中。
 
-Documents are checked for link validity using [lychee][lychee]. Lychee can be
-installed in a variety of ways depending on your platform, see the [docs on GitHub][lychee-docs].
-Some URLs are ignored by lychee, per the [lycheeignore][lycheeignore].
+文件使用 [lychee][lychee] 檢查連結有效性。Lychee 可以根據您的平台以多種方式安裝，請參閱 [GitHub 上的文件][lychee-docs]。根據 [lycheeignore][lycheeignore]，lychee 會忽略某些 URL。
 
 [dotnet-web]: https://dotnet.microsoft.com/
 [custom-helpers]: https://git-scm.com/docs/gitcredentials#_custom_helpers

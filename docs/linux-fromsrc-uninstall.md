@@ -1,28 +1,16 @@
-# Uninstalling after installing from source
+# 從原始碼安裝後移除
 
-These instructions will guide you in removing GCM after running the
-[install from source script][install-from-source] on your Linux distribution.
+這些說明將引導您，在執行您 Linux 發行版上的 [從原始碼安裝腳本][install-from-source] 後，移除 GCM。
 
-:rotating_light: PROCEED WITH CAUTION :rotating_light:
+ :rotating_light: 請小心執行 :rotating_light: 
 
-For completeness, we provide uninstall instructions for _the GCM application,
-the GCM repo, and the maximum number of dependencies*_ for all distributions.
-This repo and these dependencies may or may not have already been present on
-your system when you ran the install from source script, and uninstalling them
-could impact other programs and/or your normal workflows. Please keep this in
-mind when following the instructions below.
+為求完整，我們提供了針對 _GCM 應用程式、GCM repo，以及所有發行版中 _最大數量的相依套件*_ 的移除說明。此 repo 與這些相依套件可能已經存在、也可能尚未存在於您執行從原始碼安裝腳本時的系統中，而移除它們可能會影響其他程式及/或您的正常工作流程。在遵循以下說明時，請將此謹記在心。
 
-*Certain distributions require some dependencies of the script to function as
-expected, so we only include instructions to remove the non-required
-dependencies.
+*特定發行版需要腳本的某些相依套件才能如預期般運作，因此我們僅提供移除非必要相依套件的說明。
 
-## All distributions
+## 所有發行版
 
-**Note:** If you ran the install from source script from a pre-existing clone of
-the `git-credential-manager` repo or outside of your `$HOME` directory, you will
-need to modify the final two commands below to point to the location of your
-pre-existing clone or the directory from which you ran the install from source
-script.
+**注意：** 如果您從一個已存在的 `git-credential-manager` repo 複本或您的 `$HOME` 目錄以外的地方執行「從原始碼安裝」腳本，您將需要修改下方的最後兩個指令，使其指向您已存在的複本，或您執行從原始碼安裝腳本所在的目錄。
 
 ```console
 git-credential-manager unconfigure &&
@@ -34,10 +22,7 @@ sudo rm ~/install-from-source.sh
 
 ## Debian/Ubuntu
 
-**Note:** If you had a pre-existing installation of dotnet that was not
-installed via `apt` or `apt-get` when you ran the install from source script,
-you will need to remove it using [these instructions][uninstall-dotnet] and
-remove `dotnet-*` from the below command.
+**注意：** 如果您在執行從原始碼安裝腳本時，已有一個 dotnet 的既有安裝，且該安裝不是透過 `apt` 或 `apt-get` 所安裝，您將需要使用 [這些說明][uninstall-dotnet] 將其移除，並從下方的指令中移除 `dotnet-*`。
 
 ```console
 sudo apt remove dotnet-* dpkg-dev apt-transport-https git curl wget
@@ -45,11 +30,7 @@ sudo apt remove dotnet-* dpkg-dev apt-transport-https git curl wget
 
 ## Linux Mint
 
-**Note:** If you had a pre-existing installation of dotnet when you ran the
-install from source script that was not located at `~/.dotnet`, you will need to
-modify the first command below to point to the custom install location. If you
-would like to remove the specific version of dotnet that the script installed
-and keep other versions, you can do so with [these instructions][uninstall-dotnet].
+**注意：** 如果您在執行從原始碼安裝腳本時，已有一個不在 `~/.dotnet` 的 dotnet 既有安裝，您將需要修改下方的第一個指令，使其指向自訂的安裝位置。如果您想要移除腳本所安裝的特定 dotnet 版本並保留其他版本，您可以透過 [這些說明][uninstall-dotnet] 來完成。
 
 ```console
 sudo rm -rf ~/.dotnet &&
@@ -58,11 +39,7 @@ sudo apt remove git curl
 
 ## Fedora/CentOS/RHEL
 
-**Note:** If you had a pre-existing installation of dotnet when you ran the
-install from source script that was not located at `~/.dotnet`, you will need to
-modify the first command below to point to the custom install location. If you
-would like to remove the specific version of dotnet that the script installed
-and keep other versions, you can do so with [these instructions][uninstall-dotnet].
+**注意：** 如果您在執行從原始碼安裝腳本時，已有一個不在 `~/.dotnet` 的 dotnet 既有安裝，您將需要修改下方的第一個指令，使其指向自訂的安裝位置。如果您想要移除腳本所安裝的特定 dotnet 版本並保留其他版本，您可以透過 [這些說明][uninstall-dotnet] 來完成。
 
 ```console
 sudo rm -rf ~/.dotnet
@@ -70,11 +47,7 @@ sudo rm -rf ~/.dotnet
 
 ## Alpine
 
-**Note:** If you had a pre-existing installation of dotnet when you ran the
-install from source script that was not located at `~/.dotnet`, you will need to
-modify the first command below to point to the custom install location. If you
-would like to remove the specific version of dotnet that the script installed
-and keep other versions, you can do so with [these instructions][uninstall-dotnet].
+**注意：** 如果您在執行從原始碼安裝的腳本時，已有一個不安裝在 `~/.dotnet` 的既有 dotnet，您將需要修改下方的第一個指令，以指向該自訂安裝位置。如果您想移除此腳本所安裝的特定 dotnet 版本並保留其他版本，可以依據[這些指示][uninstall-dotnet]進行。
 
 ```console
 sudo rm -rf ~/.dotnet &&

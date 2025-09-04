@@ -1,113 +1,87 @@
-# Network and HTTP configuration
+# 網路與 HTTP 組態設定
 
-Git Credential Manager's network and HTTP(S) behavior can be configured in a few
-different ways via [environment variables][environment] and
-[configuration options][configuration].
+Git Credential Manager 的網路與 HTTP(S) 行為可透過幾種不同的方式，經由[環境變數][environment]和[組態設定選項][configuration]來設定。
 
-## HTTP Proxy
+## HTTP 代理伺服器
 
-If your computer sits behind a network firewall that requires the use of a
-proxy server to reach repository remotes or the wider Internet, there are
-various methods for configuring GCM to use a proxy.
+如果您的電腦位於網路防火牆之後，而該防火牆要求使用代理伺服器來連線儲存庫遠端或更廣泛的網際網路，那麼有多種方法可以設定 GCM 來使用代理伺服器。
 
-The simplest way to configure a proxy for _all_ HTTP(S) remotes is to
-[use the standard Git HTTP(S) proxy setting `http.proxy`][git-http-proxy].
+為 _所有_ HTTP(S) 遠端設定代理伺服器最簡單的方法是[使用標準的 Git HTTP(S) 代理伺服器設定 `http.proxy`][git-http-proxy]。
 
-For example to configure a proxy for all remotes for the current user:
+例如，為目前使用者替所有遠端設定代理伺服器：
 
 ```shell
 git config --global http.proxy http://proxy.example.com
 ```
 
-To specify a proxy for a particular remote you can
-[use the `remote.<name>.proxy` repository-level setting][git-remote-name-proxy],
-for example:
+若要為特定遠端指定代理伺服器，您可以[使用 `remote.<name>.proxy` 儲存庫層級的設定][git-remote-name-proxy]，例如：
 
 ```shell
 git config --local remote.origin.proxy http://proxy.example.com
 ```
 
-The advantage to using these standard configuration options is that in addition
-to GCM being configured to use the proxy, Git itself will be configured at the
-same time. This is probably the most commonly desired case in environments
-behind an Internet-blocking firewall.
+使用這些標準組態設定選項的優點是，除了 GCM 會被設定使用代理伺服器之外，Git 本身也會同時被設定。對於位於網際網路攔截防火牆後的環境而言，這很可能是最常見的期望情況。
 
-### Authenticated proxies
+### 需身分驗證的代理伺服器
 
-Some proxy servers do not accept anonymous connections and require
-authentication. In order to specify the credentials to be used with a proxy,
-you can specify the username and password as part of the proxy URL setting.
+有些代理伺服器不接受匿名連線，並且需要身分驗證。為了指定要與代理伺服器一同使用的憑證，您可以將使用者名稱和密碼指定為代理伺服器 URL 設定的一部分。
 
-The format follows [RFC 3986 section 3.2.1][rfc-3986-321] by including the
-credentials in the 'user information' part of the URI. The password is optional.
+其格式遵循 [RFC 3986 第 3.2.1 節][rfc-3986-321]，做法是將憑證包含在 URI 的「使用者資訊」部分。密碼為選填項目。
 
 ```text
 protocol://username[:password]@hostname
 ```
 
-For example, to specify the username `john.doe` and the password `letmein123`
-for the proxy server `proxy.example.com`:
+例如，要指定使用者名稱 `john.doe` 和密碼 `letmein123` 給代理伺服器 `proxy.example.com`：
 
 ```text
 https://john.doe:letmein123@proxy.example.com
 ```
 
-If you have special characters (as defined by
-[RFC 3986 section 2.2][rfc-3986-22]) in your username or password such as `:`,
-`@`, or any other non-URL friendly character you can URL-encode them
-([section 2.1][rfc-3986-21]).
+如果您的使用者名稱或密碼中含有特殊字元（如 [RFC 3986 第 2.2 節][rfc-3986-22] 所定義），例如 `:`、`@` 或任何其他非 URL 友善的字元，您可以對它們進行 URL 編碼 （[第 2.1 節][rfc-3986-21]）。
 
-For example, a space character would be encoded with `%20`.
+例如，一個空格字元會被編碼為 `%20`。
 
-### Other proxy options
+### 其他代理伺服器選項
 
-GCM supports other ways of configuring a proxy for convenience and compatibility.
+為了便利性與相容性，GCM 支援其他設定代理伺服器的方式。
 
-1. GCM-specific configuration options (_**only** respected by GCM; **deprecated**_):
+1. GCM 特定的組態設定選項（_**僅** GCM 採用；**已棄用**_）：
    - `credential.httpProxy`
    - `credential.httpsProxy`
-1. cURL environment variables (_also respected by Git_):
+1. cURL 環境變數（_Git 也採用_）：
    - `http_proxy`
    - `https_proxy`/`HTTPS_PROXY`
    - `all_proxy`/`ALL_PROXY`
-1. `GCM_HTTP_PROXY` environment variable (_**only** respected by GCM;
-**deprecated**_)
+1. `GCM_HTTP_PROXY` 環境變數（_**僅** GCM 採用；**已棄用**_）
 
-Note that with the cURL environment variables there are both lowercase and
-uppercase variants.
+請注意，cURL 環境變數同時有小寫和大寫兩種版本。
 
-**_Lowercase variants take precedence over the uppercase form._** This is
-consistent with how libcurl (and therefore Git) operates.
+**_小寫版本的優先級高於大寫版本。_** 這與 libcurl（以及 Git）的運作方式一致。
 
-The `http_proxy` variable exists only in the lowercase variant and libcurl does
-_not_ consider any uppercase form. _GCM also reflects this behavior._
+`http_proxy` 變數僅存在小寫版本，且 libcurl _不_會考慮任何大寫形式。_GCM 也反映了此行為。_
 
-See [the curl docs][curl-proxy-env-vars] for more information.
+更多資訊請參閱 [curl 文件][curl-proxy-env-vars]。
 
-### Bypassing addresses
+### 繞道位址
 
-In some circumstances you may wish to bypass a configured proxy for specific
-addresses. GCM supports the cURL environment variable `no_proxy` (and
-`NO_PROXY`) for this scenario, as does Git itself.
+在某些情況下，您可能會希望針對特定的位址繞過已設定的代理伺服器。GCM 支援 cURL 環境變數 `no_proxy` （以及 `NO_PROXY`）用於此情境，Git 本身也支援。
 
-Like with the [other cURL proxy environment variables][other-proxy-options],
-the lowercase variant will take precedence over the uppercase form.
+如同[其他 cURL 代理伺服器環境變數][other-proxy-options]，小寫版本的優先級將高於大寫版本。
 
-This environment variable should contain a comma-separated or space-separated
-list of host names that should not be proxied (should connect directly).
+此環境變數應包含一個以逗號或空格分隔的主機名稱列表，這些主機不應透過代理伺服器連線（應直接連線）。
 
-GCM attempts to match [libcurl's behaviour][curlopt-noproxy],
-which is briefly summarized here:
+GCM 試圖比對 [libcurl 的行為][curlopt-noproxy]，其行為簡要總結如下：
 
-- a value of `*` disables proxying for all hosts;
-- other wildcard use is **not** supported;
-- each name in the list is matched as a domain which contains the hostname,
-  or the hostname itself
-- a leading period/dot `.` matches against the provided hostname
+- 值為 `*` 會對所有主機停用代理；
+- **不**支援使用其他萬用字元；
+- 列表中的每個名稱會被比對為包含該主機名稱的網域，
+  或主機名稱本身
+- 開頭的句點/點 `.` 會與提供的主機名稱進行比對
 
-For example, setting `NO_PROXY` to `example.com` results in the following:
+例如，將 `NO_PROXY` 設定為 `example.com` 會產生以下結果：
 
-Hostname|Matches?
+主機名稱|是否匹配？
 -|-
 `example.com`|:white_check_mark:
 `example.com:80`|:white_check_mark:
@@ -116,62 +90,46 @@ Hostname|Matches?
 `www.notanexample.com`|:x:
 `example.com.othertld`|:x:
 
-**Example:**
+**範例：**
 
 ```text
 no_proxy="contoso.com,www.fabrikam.com"
 ```
 
-## TLS Verification
+## TLS 驗證
 
-If you are using self-signed TLS (SSL) certificates with a self-hosted host
-provider such as GitHub Enterprise Server or Azure DevOps Server (previously
-TFS), you may see the following error message when attempting to connect using
-Git and/or GCM:
+如果您使用自簽章 TLS (SSL) 憑證，並搭配自架的主機服務供應商（例如 GitHub Enterprise Server 或 Azure DevOps Server（先前稱為 TFS）），那麼在嘗試使用
+Git 和/或 GCM 連線時，您可能會看到以下錯誤訊息：
 
 ```shell
 $ git clone https://ghe.example.com/john.doe/myrepo
 fatal: The remote certificate is invalid according to the validation procedure.
 ```
 
-The **recommended and safest option** is to acquire a TLS certificate signed by
-a public trusted certificate authority (CA). There are multiple public CAs; here
-is a non-exhaustive list to consider: [Let's Encrypt][lets-encrypt],
-[Comodo][comodo], [Digicert][digicert], [GoDaddy][godaddy],
-[GlobalSign][globalsign].
+**建議且最安全的選項**是取得由公開受信任的憑證授權單位 (CA) 所簽署的 TLS 憑證。有多個公開的 CA；此處提供一個非詳盡的列表供您參考：[Let's Encrypt][lets-encrypt]、[Comodo][comodo]、[Digicert][digicert]、[GoDaddy][godaddy]、[GlobalSign][globalsign]。
 
-If it is not possible to **obtain a TLS certificate from a trusted 3rd party**
-then you should try to add the _specific_ self-signed certificate or one of the
-CA certificates in the verification chain to your operating system's trusted
-certificate store ([macOS][mac-keychain-access], [Windows][install-cert-vista]).
+如果無法**從受信任的第三方取得 TLS 憑證**，那麼您應該嘗試將*特定的*自簽章憑證或驗證鏈中的其中一個 CA 憑證新增至您作業系統的受信任憑證存放區中（[macOS][mac-keychain-access]、[Windows][install-cert-vista]）。
 
-If you are _unable_ to either **obtain a trusted certificate**, or trust the
-self-signed certificate you can disable certificate verification in Git and GCM.
+如果您*無法***取得受信任的憑證**，或信任該自簽章憑證，您可以停用 Git 和 GCM 中的憑證驗證。
 
 ---
 **Security Warning** :warning:
 
-Disabling verification of TLS (SSL) certificates removes protection against a
-[man-in-the-middle (MITM) attack][mitm-attack].
+停用 TLS (SSL) 憑證驗證會移除對[中間人攻擊 (MITM attack)][mitm-attack] 的防護。
 
-Only disable certificate verification if you are sure you need to, are aware of
-all the risks, and are unable to trust specific self-signed certificates
-(as described above).
+只有在您確定有此需要、並了解所有風險，且無法信任特定的自簽章憑證（如上所述）時，才應停用憑證驗證。
 
 ---
 
-The [environment variable `GIT_SSL_NO_VERIFY`][git-ssl-no-verify] and
-[Git configuration option `http.sslVerify`][git-http-ssl-verify] can be used to
-control TLS (SSL) certificate verification.
+[環境變數 `GIT_SSL_NO_VERIFY`][git-ssl-no-verify] 與 [Git 組態設定選項 `http.sslVerify`][git-http-ssl-verify] 可用來控制 TLS (SSL) 憑證驗證。
 
-To disable verification for a specific remote (for example `https://example.com`):
+若要針對特定遠端停用驗證（例如 `https://example.com`）：
 
 ```shell
 git config --global http.https://example.com.sslVerify false
 ```
 
-To disable verification for the current user for **_all remotes_** (**not
-recommended**):
+若要為目前使用者停用 **_所有遠端_** 的驗證（**不建議**）：
 
 ```shell
 # Environment variable (Windows)
@@ -186,26 +144,18 @@ git config --global http.sslVerify false
 
 ---
 
-**Note:** You may also experience similar verification errors if you are using a
-network traffic inspection tool such as [Telerik Fiddler][telerik-fiddler]. If
-you are using such tools please consult their documentation for trusting the
-proxy root certificates.
+**注意：** 如果您正在使用網路流量檢測工具，例如 [Telerik Fiddler][telerik-fiddler]，您可能也會遇到類似的驗證錯誤。如果您正在使用這類工具，請參閱其文件以信任代理伺服器根憑證。
 
 ---
 
-## Unsafe Remote URLs
+## 不安全的遠端 URL
 
-If you are using a remote URL that is not considered safe, such as unencrypted
-HTTP (remote URLs that start with `http://`), host providers may prevent you
-from authenticating with your credentials.
+如果您使用的遠端 URL 被認為不安全，例如未加密的 HTTP（以 `http://` 開頭的遠端 URL），主機供應商可能會阻止您使用您的憑證進行驗證。
 
-In this case, you should consider using a HTTPS (starting with `https://`)
-remote URL to ensure your credentials are transmitted securely.
+在這種情況下，您應該考慮使用 HTTPS（以 `https://` 開頭）的遠端 URL，以確保您的憑證安全傳輸。
 
-If you accept the risks associated with using an unsafe remote URL, you can
-configure GCM to allow the use of unsafe remote URLS by setting the environment
-variable [`GCM_ALLOW_UNSAFE_REMOTES`][unsafe-envar], or by using the Git
-configuration option [`credential.allowUnsafeRemotes`][unsafe-config] to `true`.
+如果您接受使用不安全遠端 URL 的相關風險，您可以設定 GCM 以允許使用不安全的遠端 URL，方法是設定環境變數 [`GCM_ALLOW_UNSAFE_REMOTES`][unsafe-envar]，或使用 Git
+組態設定選項 [`credential.allowUnsafeRemotes`][unsafe-config] 為 `true`。
 
 [environment]: environment.md
 [configuration]: configuration.md

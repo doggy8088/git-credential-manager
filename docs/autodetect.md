@@ -1,64 +1,37 @@
-# Host provider auto-detection
+# 主機供應商自動偵測
 
-Git Credential Manager (GCM) supports authentication with multiple different Git
-host providers including: GitHub, Bitbucket, and Azure Repos. As well as the
-hosted/cloud offerings, GCM can also work with the self-hosted or "on-premises"
-versions of these services: GitHub Enterprise Server, Bitbucket DC Server, and
-Azure DevOps Server (TFS).
+Git Credential Manager (GCM) 支援與多個不同的 Git 服務進行驗證，其主機供應商包括：GitHub、Bitbucket 和 Azure Repos。除了雲端託管服務外，GCM 也能與自行架設或「就地部署」的版本搭配運作：GitHub Enterprise Server、Bitbucket DC Server 以及 Azure DevOps Server (TFS)。
 
-By default, GCM will attempt to automatically detect which particular provider
-is behind the Git remote URL you're interacting with. For the cloud versions of
-the supported providers this is done by matching the hostname of the remote URL
-to the well-known hostnames of the services. For example "github.com" or
-"dev.azure.com".
+在預設情況下，GCM 會嘗試自動偵測由哪個特定供應商支援您正在互動的 Git 遠端 URL。對於雲端版本的受支援供應商，這是透過比對遠端 URL 的主機名稱與服務的已知主機名稱來達成。例如 "github.com" 或 "dev.azure.com"。
 
-## Self-hosted/on-prem detection
+## 自行架設/就地部署偵測
 
-In order to detect which host provider to use for a self-hosted instance, each
-provider can provide some heuristic matching of the hostname. For example any
-hostname that begins "github.*" will be matched to the GitHub host provider.
+為了偵測自行架設的執行個體應使用哪個主機供應商，每個供應商都可以提供一些主機名稱的啟發式比對。例如，任何以 "github.*" 開頭的主機名稱都會被比對為 GitHub 主機供應商。
 
-If a heuristic matches incorrectly, you can always
-[explicitly configure][explicit-config] GCM to use a particular provider.
+如果啟發式比對不正確，您隨時可以[明確設定][explicit-config] GCM 使用特定的供應商。
 
-## Remote URL probing
+## 遠端 URL 探測
 
-In addition to heuristic matching, GCM will make a network call to the remote
-URL and inspect HTTP response headers to try and detect a self-hosted instance.
+除了啟發式比對之外，GCM 也會對遠端 URL 發出網路呼叫並檢查 HTTP 回應標頭，以嘗試偵測自行架設的執行個體。
 
-This network call is only performed if neither an exact nor fuzzy match by
-hostname can be made. Only one HTTP `HEAD` call is made per credential request
-received by Git. To avoid this network call, please
-[explicitly configure][explicit-config] the host provider for your self-hosted
-instance.
+此網路呼叫僅在精確或模糊比對皆無法透過主機名稱完成時才會執行。每個憑證請求只會發出一次 HTTP `HEAD` 呼叫（由 Git 接收）。為避免此網路呼叫，請
+[明確設定][explicit-config] 您自行架設的執行個體的主機供應商。
 
-After a successful detection of the host provider, GCM will automatically set
-the [`credential.provider`][credential-provider] configuration entry
-for that remote to avoid needing to perform this expensive network call in
-future requests.
+成功偵測到主機供應商後，GCM 會自動設定該 [`credential.provider`][credential-provider] 組態項目給該遠端，以避免需要在未來的請求中執行此耗費資源的網路呼叫。
 
-### Timeout
+### 逾時
 
-You can control how long GCM will wait for a response to the remote network call
-by setting the [`GCM_AUTODETECT_TIMEOUT`][gcm-autodetect-timeout] environment
-variable, or the [`credential.autoDetectTimeout`][credential-autoDetectTimeout]
-Git configuration setting to the maximum number of milliseconds to wait.
+您可以控制 GCM 等待遠端網路呼叫回應的時間長度，方法是設定 [`GCM_AUTODETECT_TIMEOUT`][gcm-autodetect-timeout] 環境變數，或是 [`credential.autoDetectTimeout`][credential-autoDetectTimeout] Git 組態設定，將其值設為最長的等待毫秒數。
 
-The default value is 2000 milliseconds (2 seconds). You can prevent the network
-call altogether by setting a zero or negative value, for example -1.
+預設值為 2000 毫秒（2 秒）。您可以防止網路呼叫的執行，只要將值設為零或負數即可，例如 -1。
 
-## Manual configuration
+## 手動設定
 
-If the auto-detection mechanism fails to select the correct host provider, or
-if the remote probing network call is causing performance issues, you can
-configure GCM to always use a particular host provider, for a given remote URL.
+如果自動偵測機制未能選取正確的主機供應商，或如果遠端探測的網路呼叫造成效能問題，您可以設定 GCM 針對給定的遠端 URL 永遠使用特定的主機供應商。
 
-You can either use the the [`GCM_PROVIDER`][gcm-provider] environment variable,
-or the [`credential.provider`][credential-provider] Git configuration setting
-for this purpose.
+為此，您可以使用 [`GCM_PROVIDER`][gcm-provider] 環境變數，或是 [`credential.provider`][credential-provider] Git 組態設定來達成此目的。
 
-For example to tell GCM to always use the GitHub host provider for the
-"ghe.example.com" hostname, you can run the following command:
+例如，若要告知 GCM 針對 "ghe.example.com" 主機名稱一律使用 GitHub 主機供應商，您可以執行以下指令：
 
 ```shell
 git config --global credential.ghe.example.com.provider github

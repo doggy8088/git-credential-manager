@@ -1,250 +1,167 @@
-# Frequently asked questions
+# 常見問答
 
-## Authentication problems
+## 驗證問題
 
-### Q: I got an error trying to push/pull/clone. What do I do now?
+### 問：我嘗試 push/pull/clone 時遇到錯誤。我該怎麼辦？
 
-Please follow these steps to diagnose or resolve the problem:
+請依照以下步驟診斷或解決問題：
 
-1. Check if you can access the remote repository in a web browser. If you
-cannot, this is probably a permission problem and you should follow up with the
-repository administrator for access. Execute `git remote -v` from a terminal to
-show the remote URL.
+1. 檢查您是否可以在網頁瀏覽器中存取遠端儲存庫。如果無法存取，這可能是權限問題，您應該聯繫儲存庫管理員以取得存取權。從終端機執行 `git remote -v` 以顯示遠端 URL。
 
-1. If you are experiencing a Git authentication problem using an editor, IDE or
-other tool, try performing the same operation from the terminal. Does this still
-fail? If the operation succeeds from the terminal please include details of the
-specific tool and version in any issue reports.
+1. 如果您在使用編輯器、IDE 或其他工具時遇到 Git 驗證問題，請嘗試從終端機執行相同的操作。這樣仍然會失敗嗎？如果操作在終端機中成功，請在任何問題報告中包含特定工具和版本的詳細資訊。
 
-1. Set the environment variable `GCM_TRACE` and run the Git operation again.
-Find instructions in the [environment doc][env-trace].
+1. 設定環境變數 `GCM_TRACE` 並再次執行 Git 操作。請在 [環境文件][env-trace] 中尋找說明。
 
-1. If all else fails, create an issue [here][create-issue], making sure to
-include the trace log.
+1. 如果以上方法都失敗了，請[在此][create-issue]建立一個問題，並務必附上追蹤日誌。
 
-### Q: I got an error saying unsecure HTTP is not supported
+### 問：我收到錯誤訊息，指出不支援不安全的 HTTP
 
-To keep your data secure, Git Credential Manager will not send credentials for
-Azure Repos, Azure DevOps Server (TFS), GitHub, and Bitbucket, over HTTP
-connections that are not secured using TLS (HTTPS).
+為確保您的資料安全，Git Credential Manager 不會透過未使用 TLS (HTTPS) 保護的 HTTP 連線傳送 Azure Repos、Azure DevOps Server (TFS)、GitHub 和 Bitbucket 的憑證。
 
-Please make sure your remote URLs use "https://" rather than "http://".
+請確保您的遠端 URL 使用「https://」而非「http://」。
 
-### Q: I got an authentication error and I am behind a network proxy
+### 問：我收到驗證錯誤，而且我位於網路代理伺服器後方
 
-You probably need to configure Git and GCM to use a proxy. Please see detailed
-information in the [network config doc][netconfig-http-proxy].
+您可能需要設定 Git 和 GCM 以使用代理伺服器。詳細資訊請參閱[網路設定文件][netconfig-http-proxy]。
 
-### Q: I'm getting errors about picking a credential store on Linux
+### 問：我在 Linux 上選擇憑證存放區時遇到錯誤
 
-On Linux you must [select and configure a credential store][credstores], as due
-to the varied nature of distributions and installations, we cannot guarantee a
-suitable storage solution is available.
+在 Linux 上，您必須[選擇並設定憑證存放區][credstores]，因為各種發行版和安裝方式的性質不同，我們無法保證有可用的合適儲存解決方案。
 
-## About the project
+## 關於此專案
 
-### Q: How does this project relate to [Git Credential Manager for Windows][gcm-windows] and [Git Credential Manager for Mac and Linux][gcm-linux]?
+### 問：此專案與 [Git Credential Manager for Windows][gcm-windows] 和 [Git Credential Manager for Mac and Linux][gcm-linux] 有何關聯？
 
-Git Credential Manager for Windows (GCM Windows) is a .NET Framework-based Git
-credential helper which runs on Windows. Likewise the Git Credential Manager for
-Mac and Linux (Java GCM) is a Java-based Git credential helper that runs only on
-macOS and Linux. Although both of these projects aim to solve the same problem
-(providing seamless multi-factor HTTPS authentication with Git), they are based
-on different codebases and languages which is becoming hard to manage to ensure
-feature parity.
+Git Credential Manager for Windows (GCM Windows) 是一個基於 .NET Framework 的 Git 憑證輔助程式，可在 Windows 上執行。同樣地，Git Credential Manager for Mac and Linux (Java GCM) 是一個基於 Java 的 Git 憑證輔助程式，僅能在 macOS 和 Linux 上執行。儘管這兩個專案都旨在解決相同的問題（提供與 Git 的無縫多重要素 HTTPS 驗證），但它們基於不同的程式碼庫和語言，這使得確保功能對等變得難以管理。
 
-Git Credential Manager (GCM; this project) aims to replace both GCM Windows and
-Java GCM with a unified codebase which should be easier to maintain and enhance
-in the future.
+Git Credential Manager (GCM；此專案) 旨在用統一的程式碼庫取代 GCM Windows 和 Java GCM，以便未來更容易維護和增強。
 
-### Q: Does this mean GCM for Windows (.NET Framework-based) is deprecated?
+### 問：這是否意味著 GCM for Windows (.NET Framework-based) 已被棄用？
 
-Yes. Git Credential Manager for Windows (GCM Windows) is no longer receiving
-updates and fixes. All development effort has now been directed to GCM. GCM is
-available as an credential helper option in Git for Windows 2.28, and will be
-made the default helper in 2.29.
+是的。Git Credential Manager for Windows (GCM Windows) 已不再接收更新和修復。所有開發工作現已轉移至 GCM。GCM 在 Git for Windows 2.28 中作為憑證輔助程式選項提供，並將在 2.29 版中成為預設輔助程式。
 
-### Q: Does this mean the Java-based GCM for Mac/Linux is deprecated?
+### 問：這是否意味著基於 Java 的 GCM for Mac/Linux 已被棄用？
 
-Yes. Usage of Git Credential Manager for Mac and Linux (Java GCM) should be
-replaced with GCM or SSH keys. If you wish to install GCM on macOS or Linux,
-please follow the [download and installation instructions][download-and-install].
+是的。應使用 GCM 或 SSH 金鑰取代 Git Credential Manager for Mac and Linux (Java GCM)。如果您希望在 macOS 或 Linux 上安裝 GCM，請遵循[下載與安裝說明][download-and-install]。
 
-### Q: I want to use SSH
+### 問：我想使用 SSH
 
-GCM is only useful for HTTP(S)-based remotes. Git supports SSH out-of-the box so
-you shouldn't need to install anything else.
+GCM 僅適用於基於 HTTP(S) 的遠端儲存庫。Git 本身就支援 SSH，所以您不需要安裝任何其他東西。
 
-To use SSH please follow the below links:
+若要使用 SSH，請點擊以下連結：
 
 - [Azure DevOps][azure-ssh]
 - [GitHub][github-ssh]
 - [Bitbucket][bitbucket-ssh]
 
-### Q: Are HTTP(S) remotes preferred over SSH?
+### 問：HTTP(S) 遠端儲存庫比 SSH 更受青睞嗎？
 
-No, neither are "preferred". SSH isn't going away, and is supported "natively"
-in Git.
+不，兩者皆非「首選」。SSH 不會消失，且 Git「原生」支援它。
 
-### Q: Why did you not just port the existing GCM Windows codebase from .NET Framework to .NET Core?
+### 問：您為何不直接將現有的 GCM Windows 程式碼庫從 .NET Framework 移植到 .NET Core？
 
-GCM Windows was not designed with a cross-platform architecture.
+GCM Windows 的設計並非跨平台架構。
 
-### What level of support does GCM have?
+### GCM 提供何種程度的支援？
 
-Support will be best-effort. We would really appreciate your feedback to make
-this a great experience across each platform we support.
+我們將盡力提供支援。我們非常感謝您的回饋，以讓我們在所支援的每個平台上都能提供絕佳的體驗。
 
-### Q: Why does GCM not support operating system/distribution 'X', or Git hosting provider 'Y'?
+### 問：為什麼 GCM 不支援作業系統/發行版 'X' 或 Git 代管服務供應商 'Y'？
 
-The likely answer is we haven't gotten around to that yet! 🙂
+很可能的答案是我們還沒有時間處理！🙂
 
-We are working on ensuring support for the Windows, macOS, and Ubuntu operating
-system, as well as the following Git hosting providers: Azure Repos, Azure
-DevOps Server (TFS), GitHub, and Bitbucket.
+我們正在努力確保支援 Windows、macOS 和 Ubuntu 作業系統，以及下列 Git 代管服務供應商：Azure Repos、Azure DevOps Server (TFS)、GitHub 和 Bitbucket。
 
-We are happy to accept proposals and/or contributions to enable GCM to run on
-other platforms and Git host providers. Thank you!
+我們樂於接受提案和/或貢獻，讓 GCM 能在其他平台和 Git 主機供應商上執行。謝謝您！
 
-## Technical
+## 技術
 
-### Why is the `credential.useHttpPath` setting required for `dev.azure.com`?
+### 問：為什麼 `dev.azure.com` 需要 `credential.useHttpPath` 設定？
 
-Due to the design of Git and credential helpers such as GCM, we need this
-setting to make Git use the full remote URL (including the path component) when
-communicating with GCM. The new `dev.azure.com` format of Azure DevOps URLs
-means the account name is now part of the path component (for example:
-`https://dev.azure.com/contoso/...`). The Azure DevOps account name is required
-in order to resolve the correct authority for authentication (which Azure AD
-tenant backs this account, or if it is backed by Microsoft personal accounts).
+由於 Git 和像 GCM 這類憑證輔助程式的設計，我們需要此設定，讓 Git 在與 GCM 通訊時使用完整的遠端 URL（包括路徑部分）。新的 `dev.azure.com` 格式的 Azure DevOps URL 意味著帳戶名稱現在是路徑部分的一部分（例如：`https://dev.azure.com/contoso/...`）。需要 Azure DevOps 帳戶名稱才能解析正確的驗證授權單位（哪個 Azure AD 租用戶支援此帳戶，或者它是否由 Microsoft 個人帳戶支援）。
 
-In the older GCM for Windows product, the solution to the same problem was a
-"hack". GCM for Windows would walk the process tree looking for the
-`git-remote-https.exe` process, and attempt to read/parse the process
-environment block looking for the command line arguments (that contained the
-full remote URL). This is fragile and not a cross-platform solution, hence the
-need for the `credential.useHttpPath` setting with GCM.
+在舊版的 GCM for Windows 產品中，解決相同問題的方法是一種「取巧」的方式。GCM for Windows 會遍歷進程樹，尋找 `git-remote-https.exe` 進程，並嘗試讀取/解析進程環境區塊，以尋找命令列參數（其中包含完整的遠端 URL）。這種方法很脆弱，也不是一個跨平台的解決方案，因此 GCM 需要使用 `credential.useHttpPath` 設定。
 
-### Why does GCM take so long at startup the first time?
+### 問：為什麼 GCM 第一次啟動時需要這麼久？
 
-GCM will [autodetect][autodetect] what kind of Git host it's talking to. GitHub,
-Bitbucket, and Azure DevOps each have their own form(s) of authentication, plus
-there's a "generic" username and password option.
+GCM 會[自動偵測][autodetect]它正在與哪種 Git 主機通訊。GitHub、Bitbucket 和 Azure DevOps 各有其驗證形式，此外還有一個「通用」的使用者名稱和密碼選項。
 
-For the hosted versions of these services, GCM can guess from the URL which
-service to use. But for on-premises versions which would have unique URLs, GCM
-will probe with a network call. GCM caches the results of the probe, so it
-should be faster on the second and later invocations.
+對於這些服務的託管版本，GCM 可以從 URL 猜測要使用哪個服務。但對於具有唯一 URL 的內部部署版本，GCM 將透過網路呼叫進行探測。GCM 會快取探測結果，因此在第二次及之後的呼叫中應該會更快。
 
-If you know which provider you're talking to and want to avoid the probe, that's
-possible. You can explicitly tell GCM which provider to use for a URL
-"example.com" like this:
+如果您知道您正在與哪個供應商通訊，並且想要避免探測，這是可能的。您可以明確地告訴 GCM 為 URL「example.com」使用哪個供應商，如下所示：
 
-Provider|Command
+供應商|指令
 -|-
 GitHub|`git config --global credential.https://example.com.provider github`
 Bitbucket|`git config --global credential.https://example.com.provider bitbucket`
 Azure DevOps|`git config --global credential.https://example.com.provider azure-repos`
-Generic|`git config --global credential.https://example.com.provider generic`
+通用|`git config --global credential.https://example.com.provider generic`
 
-### How do I fix "Could not create SSL/TLS secure channel" errors on Windows 7?
+### 問：在 Windows 7 上如何修復「無法建立 SSL/TLS 安全通道」的錯誤？
 
-This likely indicates that you don't have newer TLS versions available. Please
-[follow Microsoft's guide][enable-windows-ssh] for enabling TLS 1.1 and 1.2 on
-your machine, specifically the **SChannel** instructions. You'll need to be on
-at least Windows 7 SP1, and in the end you should have a `TLS 1.2` key with
-`DisabledByDefault` set to `0`. You can also read
-[more from Microsoft][windows-server-tls] on this change.
+這可能表示您沒有可用的較新 TLS 版本。請[遵循 Microsoft 的指南][enable-windows-ssh]在您的電腦上啟用 TLS 1.1 和 1.2，特別是 **SChannel** 的說明。您的作業系統至少需要是 Windows 7 SP1，最後您應該有一個 `TLS 1.2` 金鑰，其 `DisabledByDefault` 設定為 `0`。您也可以閱讀[更多來自 Microsoft 的資訊][windows-server-tls]了解此變更。
 
-### How do I use GCM with Windows Subsystem for Linux (WSL)?
+### 問：如何將 GCM 與 Windows Subsystem for Linux (WSL) 搭配使用？
 
-Follow the instructions in [our WSL guide][wsl] carefully. Especially note the
-need to run `git config --global credential.https://dev.azure.com.useHttpPath true`
-_within_ WSL if you're using Azure DevOps.
+請仔細遵循[我們的 WSL 指南][wsl]中的說明。特別注意，如果您使用 Azure DevOps，需要在 WSL _內部_ 執行 `git config --global credential.https://dev.azure.com.useHttpPath true`。
 
-### Does GCM work with multiple users? If so, how?
+### 問：GCM 是否支援多個使用者？如果是，如何運作？
 
-That's a fairly complicated question to answer, but in short, yes. See
-[our document on multiple users][multiple-users] for details.
+這個問題回答起來相當複雜，但簡而言之，是的。詳情請參閱[我們關於多個使用者的文件][multiple-users]。
 
-### How can I disable GUI dialogs and prompts?
+### 問：如何停用 GUI 對話方塊和提示？
 
-There are various environment variables and configuration options available to
-customize how GCM will prompt you (or not) for input. Please see the following:
+有各種環境變數和設定選項可供自訂 GCM 如何提示您（或不提示）輸入。請參閱以下內容：
 
 - [`GCM_INTERACTIVE`][env-interactive] / [`credential.interactive`][config-interactive]
 - [`GCM_GUI_PROMPT`][env-gui-prompt] / [`credential.guiPrompt`][config-gui-prompt]
-- [`GIT_TERMINAL_PROMPT`][git-term-prompt] (note this is a _Git setting_ that
-will affect Git as well as GCM)
+- [`GIT_TERMINAL_PROMPT`][git-term-prompt]（請注意，這是一個 _Git 設定_，會影響 Git 和 GCM）
 
-### How can I extend GUI prompts/integrate prompts with my application?
+### 問：如何擴充 GUI 提示/將提示與我的應用程式整合？
 
-Application developers who use Git - think Visual Studio, GitKraken, etc. - may
-want to replace the GCM default UI with prompts styled to look like their
-application. This isn't complicated (though it is a bit of work).
+使用 Git 的應用程式開發人員——例如 Visual Studio、GitKraken 等——可能會想用看起來像他們應用程式風格的提示來取代 GCM 的預設 UI。這並不複雜（儘管需要一些工作）。
 
-You can replace the GUI prompts of the Bitbucket and GitHub host providers
-specifically by using the `credential.gitHubHelper`/`credential.bitbucketHelper`
-settings or `GCM_GITHUB_HELPER`/`GCM_BITBUCKET_HELPER` environment variables.
+您可以透過使用 `credential.gitHubHelper`/`credential.bitbucketHelper` 設定或 `GCM_GITHUB_HELPER`/`GCM_BITBUCKET_HELPER` 環境變數，來專門取代 Bitbucket 和 GitHub 主機供應商的 GUI 提示。
 
-Set these variables to the path of an external helper executable that responds
-to the requests as the bundled UI helpers do. See the current `--help` documents
-for the bundled UI helpers (`GitHub.UI`/`Atlassian.Bitbucket.UI`) for more
-information.
+將這些變數設定為會回應請求的外部輔助執行檔路徑，如同內建的 UI 輔助程式一樣。請參閱目前的 `--help` 文件以了解關於內建 UI 輔助程式 (`GitHub.UI`/`Atlassian.Bitbucket.UI`) 的更多資訊。
 
-You may also set these variables to the empty string `""` to force terminal/
-text-based prompts instead.
+您也可以將這些變數設定為空字串 `""` 以強制使用終端機／文字介面的提示。
 
-### How do I revoke consent for GCM for GitHub.com?
+### 如何撤銷 GCM 對 GitHub.com 的授權？
 
-In your GitHub user settings, navigate to
-[Integrations > Applications > Authorized OAuth Apps > Git Credential Manager][github-connected-apps]
-and pick "Revoke access".
+在您的 GitHub 使用者設定中，前往 [整合 > 應用程式 > 已授權的 OAuth 應用程式 > Git Credential Manager][github-connected-apps] 並選擇「撤銷存取權」。
 
-![Revoke GCM OAuth app access][github-oauthapp-revoke]
+![撤銷 GCM OAuth 應用程式存取權][github-oauthapp-revoke]
 
-After revoking access, any tokens created by GCM will be invalidated and can no
-longer be used to access your repositories. The next time GCM attempts to access
-GitHub.com you will be prompted to consent again.
+撤銷存取權後，由 GCM 建立的任何權杖都將失效，且無法再用於存取您的儲存庫。下次 GCM 嘗試存取 GitHub.com 時，系統將會再次提示您授權。
 
-### I used the install from source script to install GCM on my Linux distribution. Now how can I uninstall GCM and its dependencies?
+### 我已使用從原始碼安裝的腳本在我的 Linux 發行版上安裝 GCM。現在要如何解除安裝 GCM 及其相依套件？
 
-Please see full instructions [here][linux-uninstall-from-src].
+請參閱完整說明[此處][linux-uninstall-from-src]。
 
-### How do I revoke access for a GitLab OAuth application?
+### 如何撤銷 GitLab OAuth 應用程式的存取權？
 
-There are some scenarios (e.g. updated scopes) for which you will need to
-manually revoke and re-authorize access for a GitLab OAuth application. You can
-do so by:
+在某些情況下（例如，更新的範圍），您將需要手動撤銷並重新授權 GitLab OAuth 應用程式的存取權。您可以透過以下方式進行：
 
-1. Navigating to [the **Applications** page within your **User Settings**][gitlab-apps].
-2. Scrolling to **Authorized applications**.
-3. Clicking the **Revoke** button next to the name of the application for which
-you would like to revoke access (Git Credential Manager is used here for
-demonstration purposes).
+1. 前往[您 **使用者設定** 中的 **應用程式** 頁面][gitlab-apps]。
+2. 捲動至 **已授權的應用程式**。
+3. 點擊您想撤銷其存取權的應用程式名稱旁的 **撤銷** 按鈕（此處以 Git Credential Manager 為展示目的）。
 
-   ![Button to revoke GitLab OAuth Application access][gitlab-oauthapp-revoke]
-4. Waiting for a notification stating **The application was revoked access**.
+   ![撤銷 GitLab OAuth 應用程式存取權的按鈕][gitlab-oauthapp-revoke]
+4. 等待出現內容為 **已撤銷該應用程式的存取權** 的通知。
 
-   ![Notifaction of successful revocation][gitlab-oauthapp-revoked]
-5. Re-authorizing the application with the new scope (GCM should automatically
-initiate this flow for you next time access is requested).
+   ![成功撤銷的通知][gitlab-oauthapp-revoked]
+5. 使用新的範圍重新授權應用程式（GCM 應該會自動在下次請求存取時為您啟動此流程）。
 
-### Q: What do the `configure` and `unconfigure` commands do?
+### 問：`configure` 和 `unconfigure` 指令有什麼作用？
 
 #### `configure`
 
-The `configure` command will set up Git to use GCM exclusively as the credential
-helper. The `configure` command is automatically called by the installers for
-Windows and macOS, but you can also run it manually.
+`configure` 指令會將 Git 設定為專用 GCM 作為憑證助手。`configure` 指令在 Windows 和 macOS 的安裝程式中會自動呼叫，但您也可以手動執行它。
 
-It will also set Git to provide the full remote URL (including path) to
-credential helpers for Azure Repos remotes using the `dev.azure.com` URL format.
-This is required in order to be to able to correctly identify the correct
-authority for that Azure DevOps organization.
+它也會設定 Git 將完整的遠端 URL（包含路徑）提供給使用 `dev.azure.com` URL 格式的 Azure Repos 遠端儲存庫的憑證輔助程式。這是必要的，以便能夠正確識別該 Azure DevOps 組織的正確授權單位。
 
-Specifically, the `configure` command will modify your user Git configuration to
-include the following lines:
+具體來說，`configure` 指令將會修改您的使用者 Git 設定檔以包含以下幾行：
 
 ```ini
 [credential]
@@ -254,26 +171,17 @@ include the following lines:
     useHttpPath = true
 ```
 
-..where `<path-to-gcm>` is the absolute path to the GCM executable.
+..其中 `<path-to-gcm>` 是 GCM 執行檔的絕對路徑。
 
-The empty `helper =` line makes sure that existing credential helpers that may
-be set in the system Git configuration are not used. For more details see the
-[credential.helper][helper-config-docs].
+空的 `helper =` 行可確保任何可能已設定於系統 Git 設定中的現有認證輔助程式不會被使用。更多詳細資訊請參閱 [credential.helper][helper-config-docs]。
 
-If you pass the `--system` option, the `configure` command will instead modify
-the system Git configuration. This is useful if you want to set up GCM for all
-users on a machine.
+如果您傳遞 `--system` 選項，`configure` 指令將會改為修改系統 Git 設定。如果您想為所有電腦上的使用者設定 GCM，這將非常有用。
 
 #### `unconfigure`
 
-This command essentially undoes what the `configure` command does. It will check
-your Git configuration for the lines added by the `configure` command and remove
-them. The `unconfigure` command is run by the uninstaller for Windows and the
-uninstall script on macOS.
+此指令基本上是復原 `configure` 指令所做的事情。它會檢查您的 Git 設定中由 `configure` 指令新增的行，並將其移除。`unconfigure` 指令由 Windows 的解除安裝程式以及 macOS 上的解除安裝腳本執行。
 
-On Windows, if run with the `--system` option, the `unconfigure` command will
-also ensure that the `credential.helper` setting in the system Git configuration
-is not removed and is left as `manager`, the default set by Git for Windows.
+在 Windows 上，若以 `--system` 選項執行，`unconfigure` 指令將也會確保系統 Git 設定中的 `credential.helper` 設定不會被移除，並保留為 `manager`，此為 Git for Windows 設定的預設值。
 
 [autodetect]: autodetect.md
 [azure-ssh]: https://docs.microsoft.com/en-us/azure/devops/repos/git/use-ssh-keys-to-authenticate?view=azure-devops

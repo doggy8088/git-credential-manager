@@ -1,93 +1,79 @@
-# Credential stores
+# 憑證儲存庫
 
-There are several options for storing credentials that GCM supports:
+GCM 支援多種儲存憑證的選項：
 
-- Windows Credential Manager
-- DPAPI protected files
-- macOS Keychain
+- Windows 憑證管理員
+- DPAPI 保護的檔案
+- macOS 鑰匙圈
 - [freedesktop.org Secret Service API][freedesktop-secret-service]
-- GPG/[`pass`][passwordstore] compatible files
-- Git's built-in [credential cache][credential-cache]
-- Plaintext files
-- Passthrough/no-op (no credential store)
+- 與 GPG/[`pass`][passwordstore] 相容的檔案
+- Git 的內建[憑證快取][credential-cache]
+- 純文字檔案
+- 傳遞/無操作 (無憑證儲存庫)
 
-The default credential stores on macOS and Windows are the macOS Keychain and
-the Windows Credential Manager, respectively.
+在 macOS 和 Windows 上的預設憑證儲存庫分別是 macOS 鑰匙圈以及 Windows 憑證管理員。
 
-GCM comes without a default store on Linux distributions.
+GCM 在 Linux 發行版上沒有預設儲存庫。
 
-You can select which credential store to use by setting the [`GCM_CREDENTIAL_STORE`][gcm-credential-store]
-environment variable, or the [`credential.credentialStore`][credential-store]
-Git configuration setting. For example:
+您可以透過設定 [`GCM_CREDENTIAL_STORE`][gcm-credential-store]
+環境變數，或是 [`credential.credentialStore`][credential-store]
+Git 組態設定。例如：
 
 ```shell
 git config --global credential.credentialStore gpg
 ```
 
-Some credential stores have limitations, or further configuration required
-depending on your particular setup. See more detailed information below for each
-credential store.
+某些憑證儲存庫有限制，或需要進一步的設定這取決於您的特定設定。請參閱下方關於每個憑證儲存庫的詳細資訊。
 
-## Windows Credential Manager
+## Windows 憑證管理員
 
-**Available on:** _Windows_
+**適用於：** _Windows_
 
-**This is the default store on Windows.**
+**這是 Windows 上的預設儲存庫。**
 
-**:warning: Does not work over a network/SSH session.**
+**:warning: 無法透過網路/SSH 工作階段運作。**
 
 ```batch
 SET GCM_CREDENTIAL_STORE="wincredman"
 ```
 
-or
+或
 
 ```shell
 git config --global credential.credentialStore wincredman
 ```
 
-This credential store uses the Windows Credential APIs (`wincred.h`) to store
-data securely in the Windows Credential Manager (also known as the Windows
-Credential Vault in earlier versions of Windows).
+此憑證儲存庫使用 Windows Credential API (`wincred.h`) 來儲存安全地將資料儲存在 Windows 憑證管理員中 (在舊版 Windows 中也稱為 Windows Credential Vault)。
 
-You can [access and manage data in the credential manager][access-windows-credential-manager]
-from the control panel, or via the [`cmdkey` command-line tool][cmdkey].
+您可以[在憑證管理員中存取與管理資料][access-windows-credential-manager]從控制台，或透過 [`cmdkey` 命令列工具][cmdkey]。
 
-When connecting to a Windows machine over a network session (such as SSH), GCM
-is unable to persist credentials to the Windows Credential Manager due to
-limitations in Windows. Connecting by Remote Desktop doesn't suffer from this
-limitation.
+當透過網路工作階段 (例如 SSH) 連線至 Windows 機器時，GCM 無法將憑證永久儲存至 Windows 憑證管理員，這是由於 Windows 的限制。透過遠端桌面連線則沒有此限制。
 
-## DPAPI protected files
+## DPAPI 保護的檔案
 
-**Available on:** _Windows_
+**適用於：** _Windows_
 
 ```batch
 SET GCM_CREDENTIAL_STORE="dpapi"
 ```
 
-or
+或
 
 ```shell
 git config --global credential.credentialStore dpapi
 ```
 
-This credential store uses Windows DPAPI to encrypt credentials which are stored
-as files in your file system. The file structure is the same as the
-[plaintext files credential store][plaintext-files] except the first line (the
-secret value) is protected by DPAPI.
+此憑證儲存庫使用 Windows DPAPI 來加密憑證，這些憑證被儲存為您檔案系統中的檔案。其檔案結構與[純文字檔案憑證儲存庫][plaintext-files] 相同，但第一行 (即秘密值) 受 DPAPI 保護。
 
-By default files are stored in `%USERPROFILE%\.gcm\dpapi_store`. This can be
-configured using the environment variable `GCM_DPAPI_STORE_PATH` environment
-variable.
+預設情況下，檔案儲存在 `%USERPROFILE%\.gcm\dpapi_store`。此路徑可透過 `GCM_DPAPI_STORE_PATH` 環境變數來設定。
 
-If the directory doesn't exist it will be created.
+如果目錄不存在，將會建立。
 
-## macOS Keychain
+## macOS 鑰匙圈
 
-**Available on:** _macOS_
+**適用於：** _macOS_
 
-**This is the default store on macOS.**
+**這是 macOS 上的預設儲存庫。**
 
 ```shell
 export GCM_CREDENTIAL_STORE=keychain
@@ -95,17 +81,17 @@ export GCM_CREDENTIAL_STORE=keychain
 git config --global credential.credentialStore keychain
 ```
 
-This credential store uses the default macOS Keychain, which is typically the
-`login` keychain.
+此憑證儲存庫使用預設的 macOS 鑰匙圈，通常是
+`login` 鑰匙圈。
 
-You can [manage data stored in the keychain][mac-keychain-management]
-using the Keychain Access application.
+您可以使用「鑰匙圈存取」應用程式[管理儲存在鑰匙圈中的資料][mac-keychain-management]
+。
 
 ## [freedesktop.org Secret Service API][freedesktop-secret-service]
 
-**Available on:** _Linux_
+**可用於：** _Linux_
 
-**:warning: Requires a graphical user interface session.**
+**:warning: 需要圖形化使用者介面會話。**
 
 ```shell
 export GCM_CREDENTIAL_STORE=secretservice
@@ -113,18 +99,15 @@ export GCM_CREDENTIAL_STORE=secretservice
 git config --global credential.credentialStore secretservice
 ```
 
-This credential store uses the `libsecret` library to interact with the Secret
-Service. It stores credentials securely in 'collections', which can be viewed by
-tools such as `secret-tool` and `seahorse`.
+此憑證儲存庫使用 `libsecret` 函式庫來與 Secret Service 互動。它會將憑證安全地儲存於「集合」中，這些集合可透過諸如 `secret-tool` 和 `seahorse` 等工具來檢視。
 
-A graphical user interface is required in order to show a secure prompt to
-request a secret collection be unlocked.
+需要圖形化使用者介面才能顯示安全提示以請求解鎖一個祕密集合。
 
-## GPG/[`pass`][passwordstore] compatible files
+## 與 GPG/[`pass`][passwordstore] 相容的檔案
 
-**Available on:** _macOS, Linux_
+**可用於：** _macOS, Linux_
 
-**:warning: Requires `gpg`, `pass`, and a GPG key pair.**
+**:warning: 需要 `gpg`、`pass` 以及一個 GPG 金鑰對。**
 
 ```shell
 export GCM_CREDENTIAL_STORE=gpg
@@ -132,54 +115,39 @@ export GCM_CREDENTIAL_STORE=gpg
 git config --global credential.credentialStore gpg
 ```
 
-This credential store uses GPG to encrypt files containing credentials which are
-stored in your file system. The file structure is compatible with the popular
-[`pass`][passwordstore] tool. By default files are stored in
-`~/.password-store` but this can be configured using the `pass` environment
-variable `PASSWORD_STORE_DIR`.
+此憑證儲存庫使用 GPG 來加密包含憑證的檔案，這些檔案儲存在您的檔案系統中。檔案結構與廣受歡迎的 [`pass`][passwordstore] 工具相容。預設情況下，檔案儲存在 `~/.password-store` 中，但此路徑可透過 `pass` 環境變數 `PASSWORD_STORE_DIR` 進行設定。
 
-Before you can use this credential store, it must be initialized by the `pass`
-utility, which in-turn requires a valid GPG key pair. To initalize the store,
-run:
+在您可以使用此憑證儲存庫之前，必須先透過 `pass` 工具進行初始化，而該工具又需要一個有效的 GPG 金鑰對。若要初始化儲存庫，請執行：
 
 ```shell
 pass init <gpg-id>
 ```
 
-..where `<gpg-id>` is the user ID of a GPG key pair on your system. To create a
-new GPG key pair, run:
+..其中 `<gpg-id>` 是您系統上 GPG 金鑰對的使用者 ID。若要建立一個新的 GPG 金鑰對，請執行：
 
 ```shell
 gpg --gen-key
 ```
 
-..and follow the prompts.
+..並依照提示操作。
 
-### Headless/TTY-only sessions
+### 無周邊/僅 TTY 的會話
 
-If you are using the `gpg` credential store in a headless/TTY-only environment,
-you must ensure you have configured the GPG Agent (`gpg-agent`) with a suitable
-pin-entry program for the terminal such as `pinentry-tty` or `pinentry-curses`.
+如果您在無周邊/僅 TTY 的環境中使用 `gpg` 憑證儲存庫，您必須確保已為 GPG 代理程式 (`gpg-agent`) 設定一個合適的終端機密碼輸入程式，例如 `pinentry-tty` 或 `pinentry-curses`。
 
-If you are connecting to your system via SSH, then the `SSH_TTY` variable should
-automatically be set. GCM will pass the value of `SSH_TTY` to GPG/GPG Agent
-as the TTY device to use for prompting for a passphrase.
+如果您是透過 SSH 連線到您的系統，那麼 `SSH_TTY` 變數應該會自動設定。GCM 會將 `SSH_TTY` 的值傳遞給 GPG/GPG 代理程式作為提示輸入密碼時要使用的 TTY 裝置。
 
-If you are not connecting via SSH, or otherwise do not have the `SSH_TTY`
-environment variable set, you must set the `GPG_TTY` environment variable before
-running GCM. The easiest way to do this is by adding the following to your
-profile (`~/.bashrc`, `~/.profile` etc):
+如果您不是透過 SSH 連線，或因其他原因而未設定 `SSH_TTY` 環境變數，您就必須在執行 GCM 之前設定 `GPG_TTY` 環境變數。最簡單的方式是將以下內容新增至您的設定檔 (`~/.bashrc`、`~/.profile` 等) 中：
 
 ```shell
 export GPG_TTY=$(tty)
 ```
 
-**Note:** Using `/dev/tty` does not appear to work here - you must use the real
-TTY device path, as returned by the `tty` utility.
+**注意：** 在此處使用 `/dev/tty` 似乎無效 - 您必須使用真實的 TTY 裝置路徑，即由 `tty` 工具所回傳的路徑。
 
-## Git's built-in [credential cache][credential-cache]
+## Git 的內建[憑證快取][credential-cache]
 
-**Available on:** _macOS, Linux_
+**可用於：** _macOS, Linux_
 
 ```shell
 export GCM_CREDENTIAL_STORE=cache
@@ -187,21 +155,9 @@ export GCM_CREDENTIAL_STORE=cache
 git config --global credential.credentialStore cache
 ```
 
-This credential store uses Git's built-in ephemeral
-in-memory [credential cache][credential-cache].
-This helps you reduce the number of times you have to authenticate but
-doesn't require storing credentials on persistent storage. It's good for
-scenarios like [Azure Cloud Shell][azure-cloudshell]
-or [AWS CloudShell][aws-cloudshell], where you don't want to
-leave credentials on disk but also don't want to re-authenticate on every Git
-operation.
+此憑證儲存庫使用 Git 的內建短暫記憶體內[憑證快取][credential-cache]。這有助於您減少需要驗證的次數，但是不需要將憑證儲存在永久性儲存空間中。這對於像是 [Azure Cloud Shell][azure-cloudshell] 的情境或 [AWS CloudShell][aws-cloudshell] 很有幫助，在這些情境下您不希望將憑證留在磁碟上，但也不希望在每次 Git 操作時都重新驗證。
 
-By default, `git credential-cache` stores your credentials for 900 seconds.
-That, and any other [options it accepts][git-credential-cache-options],
-may be altered by setting them in the environment variable
-`GCM_CREDENTIAL_CACHE_OPTIONS` or the Git config value
-`credential.cacheOptions`. (Using the `--socket` option is untested
-and unsupported, but there's no reason it shouldn't work.)
+預設情況下，`git credential-cache` 會將您的憑證儲存 900 秒。這個時間以及它所接受的任何其他[選項][git-credential-cache-options]，可以透過在環境變數中設定來更改 `GCM_CREDENTIAL_CACHE_OPTIONS` 或 Git 設定值`credential.cacheOptions`。 (使用 `--socket` 選項是未經測試的且不支援的，但沒有理由它不能運作。)
 
 ```shell
 export GCM_CREDENTIAL_CACHE_OPTIONS="--timeout 300"
@@ -209,11 +165,11 @@ export GCM_CREDENTIAL_CACHE_OPTIONS="--timeout 300"
 git config --global credential.cacheOptions "--timeout 300"
 ```
 
-## Plaintext files
+## 純文字檔案
 
-**Available on:** _Windows, macOS, Linux_
+**適用於：** _Windows, macOS, Linux_
 
-**:warning: This is not a secure method of credential storage!**
+**:warning: 這不是一種安全的憑證儲存方法！**
 
 ```shell
 export GCM_CREDENTIAL_STORE=plaintext
@@ -221,61 +177,45 @@ export GCM_CREDENTIAL_STORE=plaintext
 git config --global credential.credentialStore plaintext
 ```
 
-This credential store saves credentials to plaintext files in your file system.
-By default files are stored in `~/.gcm/store` or `%USERPROFILE%\.gcm\store`.
-This can be configured using the environment variable `GCM_PLAINTEXT_STORE_PATH`
-environment variable.
+此憑證儲存庫會將憑證以純文字檔案形式儲存在您的檔案系統中。預設情況下，檔案儲存在 `~/.gcm/store` 或 `%USERPROFILE%\\.gcm\\store`。可以使用環境變數 `GCM_PLAINTEXT_STORE_PATH` 進行設定環境變數。
 
-If the directory doesn't exist it will be created.
+如果目錄不存在，將會自動建立。
 
-On POSIX platforms the newly created store directory will have permissions set
-such that only the owner can `r`ead/`w`rite/e`x`ecute (`700` or `drwx---`).
-Permissions on existing directories will not be modified.
+在 POSIX 平台上，新建立的儲存庫目錄將會設定權限使得只有擁有者可以`r`ead/`w`rite/e`x`ecute (`700` 或 `drwx---`)。現有目錄的權限將不會被修改。
 
-NB. GCM's plaintext store is distinct from [git-credential-store][git-credential-store],
-though the formats are similar. The default paths differ.
+注意：GCM 的純文字儲存庫與 [git-credential-store][git-credential-store] 不同，雖然格式相似，但預設路徑不同。
 
 ---
 
-:warning: **WARNING** :warning:
+:warning: **警告** :warning:
 
-**This storage mechanism is NOT secure!**
+**此儲存機制並不安全！**
 
-**Secrets and credentials are stored in plaintext files _without any security_!**
+**密鑰和憑證會以純文字檔案形式儲存，_沒有任何安全性_！**
 
-It is **HIGHLY RECOMMENDED** to always use one of the other credential store
-options above. This option is only provided for compatibility and use in
-environments where no other secure option is available.
+**強烈建議**一律使用其他憑證儲存庫選項。此選項僅為相容性考量及在沒有其他安全選項可用的環境中使用而提供。
 
-If you chose to use this credential store, it is recommended you set the
-permissions on this directory such that no other users or applications can
-access files within. If possible, use a path that exists on an external volume
-that you take with you and use full-disk encryption.
+如果您選擇使用此憑證儲存庫，建議您設定此目錄的權限，讓其他使用者或應用程式無法存取其中的檔案。如果可能，請使用存在於外部磁碟區上的路徑以便隨身攜帶，並使用全磁碟加密。
 
-## Passthrough/no-op (no credential store)
+## 通透/無操作 (無憑證儲存庫)
 
-**Available on:** _Windows, macOS, Linux_
+**適用於：** _Windows, macOS, Linux_
 
-**:warning: .**
+**:warning: 。**
 
 ```batch
 SET GCM_CREDENTIAL_STORE="none"
 ```
 
-or
+或
 
 ```shell
 git config --global credential.credentialStore none
 ```
 
-This option disables the internal credential store. All operations to store or
-retrieve credentials will do nothing, and will return success. This is useful if
-you want to use a different credential store, chained in sequence via Git
-configuration, and don't want GCM to store credentials.
+此選項會停用內部憑證儲存庫。所有儲存或擷取憑證的操作將不會執行任何動作，且會回傳成功。如果您想透過 Git 循序串接使用不同的憑證儲存庫，並設定不讓 GCM 儲存憑證，此選項便很有用。
 
-Note that you'll want to ensure that another credential helper is placed before
-GCM in the `credential.helper` Git configuration or else you will be prompted to
-enter your credentials every time you interact with a remote repository.
+請注意，您需要確保將另一個憑證輔助程式放置在 GCM 之前，在 `credential.helper` Git 設定中，否則系統會提示您在每次與遠端儲存庫互動時輸入您的憑證。
 
 [access-windows-credential-manager]: https://support.microsoft.com/en-us/windows/accessing-credential-manager-1b5c916a-6a16-889f-8581-fc16e8165ac0
 [aws-cloudshell]: https://aws.amazon.com/cloudshell/

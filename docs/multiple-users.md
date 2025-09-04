@@ -1,136 +1,104 @@
-# Multiple users
+# 多個使用者
 
-If you work with multiple different identities on a single Git hosting service,
-you may be wondering if Git Credential Manager (GCM) supports this workflow. The
-answer is yes, with a bit of complexity due to how it interoperates with Git.
+如果您在單一 Git 託管服務上使用多個不同的身份，您可能會想知道 Git Credential Manager (GCM) 是否支援此工作流程。答案是肯定的，但由於其與 Git 的互通方式，會有一些複雜性。
 
 ---
 
-**Prompted to select an account?**
+**提示選擇帳號？**
 
-Read the [**TL;DR** section][tldr] below for a quick summary of how to make GCM
-remember which account to use for which repository.
+請閱讀下方的 [**TL;DR** 章節][tldr]，快速了解如何讓 GCM 記住哪個儲存庫要使用哪個帳號。
 
 ---
 
-## Foundations: Git and Git hosts
+## 基礎：Git 與 Git 託管服務
 
-Git itself doesn't have a single, strong concept of "user". There's the
-`user.name` and `user.email` which get embedded into commit headers/trailers,
-but these are arbitrary strings. GCM doesn't interact with this notion of a user
-at all. You can put whatever you want into your `user.*` config, and nothing in
-GCM will change at all.
+Git 本身沒有單一、明確的「使用者」概念。雖然有 `user.name` 和 `user.email` 會被嵌入到 commit 的標頭/結尾，但這些都只是任意字串。GCM 完全不與此使用者概念互動。您可以在 `user.*` 設定中填入任何內容，GCM 的行為完全不會改變。
 
-Separate from the user strings in commits, Git recognizes the "user" part of a
-remote URL or a credential. These are not often used, at least by default, in
-the web UI of major Git hosts.
+除了 commit 中的使用者字串外，Git 還能辨識遠端 URL 或憑證中的「使用者」部分。不過，在主流 Git 託管服務的網頁介面中，這些部分預設並不常用。
 
-Git hosting providers (like GitHub or Bitbucket) _do_ have a concept of "user".
-Typically it's an identity like a username or email address, plus a password or
-other credential to perform actions as that user. You may have guessed by now
-that GCM (the Git **Credential** Manager) does work with this notion of a user.
+Git 託管服務供應商（如 GitHub 或 Bitbucket）_確實_有「使用者」的概念。通常，這是一個像使用者名稱或電子郵件地址的身份，再加上密碼或其他憑證，以該使用者身份執行操作。您現在可能已經猜到，GCM（Git **Credential** Manager）正是與此使用者概念搭配運作的。
 
-## People, identities, credentials, oh my
+## 人、身份、憑證，我的天啊
 
-You (a physical person) may have one or more user accounts (identities) with one
-or more Git hosting providers. Since most Git hosts don't put a "user" part in
-their URLs, by default, Git will treat the user part for a remote as the empty
-string. If you have multiple identities on one domain, you'll need to insert a
-unique user part per-identity yourself.
+您（一個自然人）可能在一個或多個 Git 託管服務供應商那裡擁有多個使用者帳號（身份）。由於大多數 Git 託管服務預設不會在其 URL 中加入「使用者」部分，因此 Git 會將遠端的使用者部分視為空字串。如果您在同一個網域上有多個身份，您需要自行為每個身份插入一個獨一的使用者部分。
+在同一個網域上擁有多個身份是有充分理由的。您可能用一個 GitHub 身份處理個人工作，另一個處理開源專案，第三個則用於雇主的工作。您可以要求 Git 為同一個供應商託管的不同儲存庫指派不同的憑證。HTTPS URL 在網域名稱的 `@` 符號前包含一個可選的「名稱」部分，您可以用它來強制 Git 區分多個使用者。這部分很可能應該是您在 Git 託管服務上的使用者名稱，因為在某些情況下，GCM 會將其視為使用者名稱來使用。
 
-There are good reasons for having multiple identities on one domain. You might
-use one GitHub identity for your personal work, another for your open source
-work, and a third for your employer's work. You can ask Git to assign a
-different credential to different repositories hosted on the same provider.
-HTTPS URLs include an optional "name" part before an `@` sign in the domain
-name, and you can use this to force Git to distinguish multiple users. This
-should likely be your username on the Git hosting service, since there are
-cases where GCM will use it like a username.
+## 進行設定
 
-## Setting it up
+舉個例子，假設您正在處理託管於同一個網域名稱下的多個儲存庫。
 
-As an example, let's say you're working on multiple repositories hosted at the
-same domain name.
-
-| Repo URL | Identity |
+| 儲存庫 URL | 身份 |
 |----------|----------|
 | `https://example.com/open-source/library.git` | `contrib123` |
 | `https://example.com/more-open-source/app.git` | `contrib123` |
 | `https://example.com/big-company/secret-repo.git` | `employee9999` |
 
-When you clone these repos, include the identity and an `@` before the domain
-name in order to force Git and GCM to use different identities. If you've
-already cloned the repos, you can update the remote URL to include the identity.
 
-### Example: fresh clones
+當您複製這些儲存庫時，請在網域名稱前加上身份和 `@` 符號，以強制 Git 和 GCM 使用不同的身份。如果您已經複製了儲存庫，您可以更新遠端 URL 來包含該身份。
 
+### 範例：新的複製
 ```shell
-# instead of `git clone https://example.com/open-source/library.git`, run:
+# 取代 `git clone https://example.com/open-source/library.git`，請執行：
 git clone https://contrib123@example.com/open-source/library.git
 
-# instead of `git clone https://example.com/big-company/secret-repo.git`, run:
+# 取代 `git clone https://example.com/big-company/secret-repo.git`，請執行：
 git clone https://employee9999@example.com/big-company/secret-repo.git
 ```
 
-### Example: existing clones
 
+
+### 範例：現有的複製
 ```shell
-# in the `library` repo, run:
+# 在 `library` 儲存庫中，執行：
 git remote set-url origin https://contrib123@example.com/open-source/library.git
 
-# in the `secret-repo` repo, run:
+# 在 `secret-repo` 儲存庫中，執行：
 git remote set-url origin https://employee9999@example.com/big-company/secret-repo.git
 ```
 
+
+
 ## Azure DevOps
 
-[Azure DevOps has some additional, optional complexity][azure-access-tokens]
-which you should also be aware of if you're using it.
+如果您正在使用 [Azure DevOps，您還應該注意它有一些額外的、可選的複雜性][azure-access-tokens]。
 
 [azure-access-tokens]: azrepos-users-and-tokens.md
 
 ## GitHub
 
-You can use the `github [list | login | logout]` commands to manage your GitHub
-accounts. These commands are documented in the [command-line usage][cli-usage]
-or by running `git credential-manager github --help`.
+您可以使用 `github [list | login | logout]` 指令來管理您的 GitHub 帳號。這些指令記載於 [命令列用法][cli-usage] 文件中，或者您可以執行 `git credential-manager github --help` 來查看。
 
-## TL;DR: Tell GCM to remember which account to use
+## TL;DR：讓 GCM 記住要使用哪個帳號
 
-To set a default account for a particular remote you can simply set the
-following Git configuration:
-
+要為特定的遠端設定預設帳號，您只需設定以下 Git 組態：
 ```shell
 git config --global credential.<URL>.username <USERNAME>
 ```
 
-..where `<URL>` is the remote URL and `<USERNAME>` is the account you wish to
-have as the default. For example, for `github.com` and the user `alice`:
 
+
+..其中 `<URL>` 是遠端 URL，而 `<USERNAME>` 是您希望設為預設的帳號。例如，對於 `github.com` 和使用者 `alice`：
 ```shell
 git config --global credential.https://github.com.username alice
 ```
 
-If you wish to set a user for a specific repository or remote URL, you can
-include the account name in the remote URL. If you're using HTTPS remotes, you
-can include the account name in the URL by inserting it before the `@` sign
-in the domain name.
 
-For example, if you want to always use the `alice` account for the `mona/test`
-GitHub repository, you can clone it using the `alice` account by running:
 
+如果您希望為特定的儲存庫或遠端 URL 設定使用者，您可以將帳號名稱包含在遠端 URL 中。如果您使用 HTTPS 遠端，您可以將帳號名稱插入到網域名稱的 `@` 符號前。
+
+例如，如果您希望 `mona/test` 這個 GitHub 儲存庫總是使用 `alice` 帳號，您可以在複製時使用 `alice` 帳號，執行：
 ```shell
 git clone https://alice@github.com/mona/test
 ```
 
-To update an existing clone, you can run `git remote set-url` to update the URL:
 
+
+要更新現有的複製，您可以執行 `git remote set-url` 來更新 URL：
 ```shell
 git remote set-url origin https://alice@github.com/mona/test
 ```
 
-If your account name includes an `@` then remember to escape this character
-using `%40`: `https://alice%40contoso.com@example.com/test`.
+如果您的帳號名稱包含 `@`，請記得使用 `%40` 來逸出此字元：`https://alice%40contoso.com@example.com/test`。
 
 [tldr]: #tldr-tell-gcm-to-remember-which-account-to-use
 [cli-usage]: usage.md

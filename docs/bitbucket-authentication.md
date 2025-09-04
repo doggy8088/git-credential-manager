@@ -1,60 +1,28 @@
-# Bitbucket Authentication
+# Bitbucket 身份驗證
 
-When GCM is triggered by Git, it will check the `host` parameter passed
-to it. If this parameter contains `bitbucket.org` it will trigger Bitbucket
-authentication and prompt you for credentials. In this scenario, you have two
-options for authentication: `OAuth` or `Password/Token`.
+當 GCM 由 Git 觸發時，它會檢查傳遞給它的 `host` 參數。如果此參數包含 `bitbucket.org`，它將觸發 Bitbucket 身份驗證並提示您輸入憑證。在這種情況下，您有兩種身份驗證選項：`OAuth` 或 `密碼/權杖`。
 
 ### OAuth
 
-The dialog GCM presents for authentication contains two tabs. The first tab
-(labeled `Browser`) will trigger OAuth Authentication. Clicking the `Sign in
-with your browser` button opens a browser request to
-`_https://bitbucket.org/site/oauth2/authorize?response_type=code&client_id={consumerkey}&state=authenticated&scope={scopes}&redirect_uri=http://localhost:34106/_`. This triggers a flow on Bitbucket requiring you to log in
-(and potentially complete 2FA) to authorize GCM to access Bitbucket with the
-specified scopes. GCM will then spawn a temporary local webserver, listening on
-port 34106, to handle the OAuth redirect/callback. Assuming you successfully
-log into Bitbucket and authorize GCM, this callback will include the appropriate
-tokens for GCM to handle authencation. These tokens are then stored in your
-configured [credential store][credstores] and are returned to Git.
+GCM 呈現的身份驗證對話方塊包含兩個分頁。第一個分頁（標示為 `Browser`）將觸發 OAuth 身份驗證。點擊 `Sign in with your browser` 按鈕會開啟一個瀏覽器請求，網址為 `_https://bitbucket.org/site/oauth2/authorize?response_type=code&client_id={consumerkey}&state=authenticated&scope={scopes}&redirect_uri=http://localhost:34106/_`。這會觸發 Bitbucket 上的一個流程，要求您登入（並可能完成兩步驟驗證）以授權 GCM 使用指定的範圍存取 Bitbucket。然後，GCM 將產生一個暫時的本機網頁伺服器，在通訊埠 34106 上監聽，以處理 OAuth 重新導向/回呼。假設您成功登入 Bitbucket 並授權 GCM，此回呼將包含 GCM 處理身份驗證所需的適當權杖。這些權杖隨後會儲存在您設定的 [憑證儲存區][credstores] 中，並返回給 Git。
 
-### Password/Token
+### 密碼/權杖
 
-**Note:** Bitbucket Data Center, also known as Bitbucket Server or Bitbucket On
-Premises, only supports Basic Authentication - please follow the below
-instructions if you are using this product.
+**注意：** Bitbucket Data Center，也稱為 Bitbucket Server 或 Bitbucket On Premises，僅支援基本驗證 - 如果您使用此產品，請遵循以下說明。
 
-The dialog GCM presents for authentication contains two tabs. The second tab
-(labeled `Password/Token`) will trigger Basic Authentication. This tab contains
-two fields, one for your username and one for your password or token. If the
-`username` parameter was passed into GCM, that will pre-populate the username
-field, although it can be overridden. Enter your username (if needed) and your
-password or token (i.e. Bitbucket App Password) and click `Sign in`.
+GCM 呈現的身份驗證對話方塊包含兩個分頁。第二個分頁（標示為 `Password/Token`）將觸發基本驗證。此分頁包含兩個欄位，一個用於您的使用者名稱，另一個用於您的密碼或權杖。如果`username` 參數已傳遞給 GCM，它將預先填入使用者名稱欄位，但可以被覆寫。輸入您的使用者名稱（如果需要）和您的密碼或權杖（例如 Bitbucket 應用程式密碼），然後點擊 `Sign in`。
 
-:rotating_light: Requirements for App Passwords :rotating_light:
+:rotating_light: 應用程式密碼要求 :rotating_light:
 
-If you are planning to use an [App Password][app-password] for basic
-authentication, it must at a minimum have _Account Read_ permissions (as shown
-below). If your App Password does not have these permissions, you will be
-re-prompted for credentials on every interaction with the server.
+如果您打算使用 [應用程式密碼][app-password] 進行基本驗證，它至少必須具有_帳號讀取_權限（如下所示）。如果您的應用程式密碼沒有這些權限，您將在每次與伺服器互動時被重新提示輸入憑證。
 
 ![][app-password-example]
 
-When your username and password are submitted, GCM will attempt to retrieve a
-basic authentication token for these credentials via the Bitbucket REST API. If
-this is successful, the credentials, username, and password/token are stored in
-your configured [credential store][credstores] and are returned to Git.
+當您提交使用者名稱和密碼時，GCM 將嘗試透過 Bitbucket REST API 為這些憑證擷取基本驗證權杖。如果成功，憑證、使用者名稱和密碼/權杖將儲存在您設定的[憑證儲存區][credstores] 中，並返回給 Git。
 
-If the API request fails with a 401 return code, the entered username/password
-combination is invalid; nothing is stored and nothing is returned to Git. In
-this scenario, re-attempt authentication, ensuring your credentials are correct.
+如果 API 請求失敗並傳回 401 狀態碼，表示輸入的使用者名稱/密碼組合無效；不會儲存任何內容，也不會將任何內容返回給 Git。在這種情況下，請重新嘗試驗證，並確保您的憑證正確無誤。
 
-If the API request fails with a 403 (Forbidden) return code, the username and
-password are valid, but 2FA is enabled on the corresponding Bitbucket Account.
-In this scenario, you will be prompted to complete the OAuth authentication
-process.  If this is successful, the credentials, username, and password/token
-are stored in your configured [credential store][credstores] and are returned to
-Git.
+如果 API 請求失敗並回傳 403 (Forbidden) 狀態碼，表示使用者名稱和密碼是有效的，但在對應的 Bitbucket 帳戶上已啟用兩步驟驗證 (2FA)。在此情況下，系統將提示您完成 OAuth 身份驗證流程。 如果成功，憑證、使用者名稱和密碼/權杖將會儲存在您設定的 [credential store][credstores] 中，並回傳給 Git。
 
 [app-password]: https://support.atlassian.com/bitbucket-cloud/docs/app-passwords/
 [app-password-example]: img/app-password.png

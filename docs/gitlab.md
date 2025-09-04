@@ -1,30 +1,26 @@
-# GitLab support
+# GitLab 支援
 
-Git Credential Manager supports [gitlab.com][gitlab] out the box.
+Git Credential Manager 內建支援 [gitlab.com][gitlab]。
 
-## Using on another instance
+## 在其他實例上使用
 
-To use on another instance, eg. `https://gitlab.example.com` requires setup and
-configuration:
+若要在其他實例（例如 `https://gitlab.example.com`）上使用，需要進行設定與配置：
 
-1. [Create an OAuth application][gitlab-oauth]. This can be at the user, group
-or instance level. Specify a name and use a redirect URI of `http://127.0.0.1/`.
-_Unselect_ the 'Confidential' option. Set the 'read_repository' and
-'write_repository' scopes.
-1. Copy the application ID and configure
+1. [建立一個 OAuth 應用程式][gitlab-oauth]。這可以在使用者、群組或實例層級進行。指定一個名稱並使用 `http://127.0.0.1/` 作為重導向 URI。_取消勾選_「Confidential」選項。設定「read_repository」和「write_repository」範圍。
+1. 複製應用程式 ID 並設定
 `git config --global credential.https://gitlab.example.com.gitLabDevClientId <APPLICATION_ID>`
-1. Copy the application secret and configure
+1. 複製應用程式密鑰並設定
 `git config --global credential.https://gitlab.example.com.gitLabDevClientSecret
 <APPLICATION_SECRET>`
-1. Optional if you want to force browser auth:
+1. （可選）如果您想強制使用瀏覽器驗證：
 `git config --global credential.https://gitlab.example.com.gitLabAuthModes browser`
-1. For good measure, configure
-`git config --global credential.https://gitlab.example.com.provider gitlab`.
-This may be necessary to recognise the domain as a GitLab instance.
-1. Verify the config is as expected
+1. 為求保險，請設定
+`git config --global credential.https://gitlab.example.com.provider gitlab`。
+這對於將該網域辨識為 GitLab 實例可能是必要的。
+1. 驗證設定是否符合預期
 `git config --global --get-urlmatch credential https://gitlab.example.com`
 
-### Clearing config
+### 清除設定
 
 ```console
 git config --global --unset-all credential.https://gitlab.example.com.gitLabDevClientId
@@ -32,10 +28,9 @@ git config --global --unset-all credential.https://gitlab.example.com.gitLabDevC
 git config --global --unset-all credential.https://gitlab.example.com.provider
 ```
 
-### Config for popular instances
+### 常用實例的設定
 
-For convenience, here are the config commands for several popular GitLab
-instances, provided by community member [hickford](https://github.com/hickford/):
+為方便起見，以下是由社群成員 [hickford](https://github.com/hickford/) 提供的數個常用 GitLab 實例的設定指令：
 
 ```console
 # https://gitlab.freedesktop.org/
@@ -58,36 +53,31 @@ git config --global credential.https://code.videolan.org.gitLabDevClientId f35c3
 git config --global credential.https://code.videolan.org.gitLabDevClientSecret 631558ec973c5ef65b78db9f41103f8247dc68d979c86f051c0fe4389e1995e8
 ```
 
-See also [issue #677](https://github.com/git-ecosystem/git-credential-manager/issues/677).
+另請參閱 [issue #677](https://github.com/git-ecosystem/git-credential-manager/issues/677)。
 
-## Preferences
+## 偏好設定
 
 ```console
-Select an authentication method for 'https://gitlab.com/':
-  1. Web browser (default)
-  2. Personal access token
-  3. Username/password
-option (enter for default):
+為 'https://gitlab.com/' 選擇一種驗證方法：
+  1. 網頁瀏覽器 (預設)
+  2. 個人存取權杖
+  3. 使用者名稱/密碼
+選項 (按 Enter 使用預設值)：
 ```
 
-If you have a preferred authentication mode, you can specify
-[credential.gitLabAuthModes][config-gitlab-auth-modes]:
+如果您有偏好的驗證模式，可以指定 [credential.gitLabAuthModes][config-gitlab-auth-modes]：
 
 ```console
 git config --global credential.gitLabAuthModes browser
 ```
 
-## Caveats
+## 注意事項
 
-Improved support requires changes in GitLab. Please vote for these issues if
-they affect you:
+更完善的支援需要 GitLab 進行變更。如果下列議題對您有影響，請前往投票支持：
 
-1. No support for OAuth device authorization (necessary for machines without web
-browser): [GitLab issue 332682][gitlab-issue-332682]
-1. Preconfigure Git Credential Manager as instance-wide OAuth application:
-[GitLab issue 374172](gitlab-issue-374172)
-1. Username/password authentication is suggested even if disabled on server:
-[GitLab issue 349463][gitlab-issue-349463]
+1. 不支援 OAuth 裝置授權（對於沒有網頁瀏覽器的機器是必要的）：[GitLab issue 332682][gitlab-issue-332682]
+1. 將 Git Credential Manager 預設設定為實例層級的 OAuth 應用程式：[GitLab issue 374172](gitlab-issue-374172)
+1. 即使伺服器已停用使用者名稱/密碼驗證，系統仍會提示此選項：[GitLab issue 349463][gitlab-issue-349463]
 
 [config-gitlab-auth-modes]: configuration.md#credential.gitLabAuthModes
 [gitlab]: https://gitlab.com

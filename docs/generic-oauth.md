@@ -1,18 +1,12 @@
-# Generic Host Provider OAuth
+# 通用主機供應商 OAuth
 
-Many Git hosts use the popular standard OAuth2 or OpenID Connect (OIDC)
-authentication mechanisms to secure repositories they host.
-Git Credential Manager supports any generic OAuth2-based Git host by simply
-setting some configuration.
+許多 Git 託管服務使用流行的標準 OAuth2 或 OpenID Connect (OIDC)驗證機制，以保護其託管的儲存庫。Git Credential Manager 僅需透過簡單的設定，即可支援任何基於 OAuth2 的通用 Git 主機設定一些組態。
 
-## Registering an OAuth application
+## 註冊 OAuth 應用程式
 
-In order to use GCM with a Git host that supports OAuth you must first have
-registered an OAuth application with your host. The instructions on how to do
-this can be found with your Git host provider's documentation.
+為了在支援 OAuth 的 Git 主機上使用 GCM，您必須先向您的主機註冊一個 OAuth 應用程式。如何執行的說明可以在您的 Git 主機供應商的文件中找到。
 
-When registering a new application, you should make sure to set an HTTP-based
-redirect URL that points to `localhost`; for example:
+註冊新應用程式時，您應確保設定一個基於 HTTP 的指向 `localhost` 的重新導向 URL；例如：
 
 ```text
 http://localhost
@@ -21,38 +15,28 @@ http://127.0.0.1
 http://127.0.0.1:<port>
 ```
 
-Note that you cannot use an HTTPS redirect URL. GCM does not require a specific
-port number be used; if your Git host requires you to specify a port number in
-the redirect URL then GCM will use that. Otherwise an available port will be
-selected at the point authentication starts.
+請注意，您不能使用 HTTPS 重新導向 URL。GCM 不需要使用特定的連接埠號碼；如果您的 Git 主機要求您在重新導向 URL 中指定連接埠號碼，那麼 GCM 就會使用該號碼。否則，將會在驗證開始時選取一個可用的連接埠。
 
-You must ensure that all scopes required to read and write to Git repositories
-have been granted for the application or else credentials that are generated
-will cause errors when pushing or fetching using Git.
+您必須確保讀取和寫入 Git 儲存庫所需的所有範圍都已授予該應用程式，否則產生的憑證在使用 Git 推送或擷取時將會導致錯誤。
 
-As part of the registration process you should also be given a Client ID and,
-optionally, a Client Secret. You will need both of these to configure GCM.
+在註冊過程中，您應該也會獲得一個用戶端 ID 以及，（選擇性）一個用戶端密鑰。您將需要這兩者來設定 GCM。
 
-## Configure GCM
+## 設定 GCM
 
-In order to configure GCM to use OAuth with your Git host you need to set the
-following values in your Git configuration:
+為了設定 GCM 以便在您的 Git 主機上使用 OAuth，您需要設定在您的 Git 組態中設定以下值：
 
-- Client ID
-- Client Secret (optional)
-- Redirect URL (optional, defaults to `http://127.0.0.1`)
-- Scopes (optional)
-- OAuth Endpoints
-  - Authorization Endpoint
-  - Token Endpoint
-  - Device Code Authorization Endpoint (optional)
+- 用戶端 ID
+- 用戶端密鑰（選擇性）
+- 重新導向 URL（選擇性，預設為 `http://127.0.0.1`）
+- 範圍（選擇性）
+- OAuth 端點
+  - 授權端點
+  - 權杖端點
+  - 裝置碼授權端點（選擇性）
 
-OAuth endpoints can be found by consulting your Git host's OAuth app development
-documentation. The URLs can be either absolute or relative to the host name;
-for example: `https://example.com/oauth/authorize` or `/oauth/authorize`.
+OAuth 端點可透過查閱您 Git 主機的 OAuth 應用程式開發文件找到。URL 可以是絕對路徑，也可以是相對於主機名稱的路徑；例如：`https://example.com/oauth/authorize` 或 `/oauth/authorize`。
 
-In order to set these values, you can run the following commands, where `<HOST>`
-is the hostname of your Git host:
+為了設定這些值，您可以執行以下指令，其中 `<HOST>` 是您的 Git 主機的主機名稱：
 
 ```shell
 git config --global credential.<HOST>.oauthClientId <ClientID>
@@ -64,13 +48,13 @@ git config --global credential.<HOST>.oauthScopes <Scopes>
 git config --global credential.<HOST>.oauthDeviceEndpoint <DeviceEndpoint>
 ```
 
-**Example commands:**
+**指令範例：**
 
 - `git config --global credential.https://example.com.oauthClientId C33F2751FB76`
 
 - `git config --global credential.https://example.com.oauthScopes "code:write profile:read"`
 
-**Example Git configuration**
+**Git 組態範例**
 
 ```ini
 [credential "https://example.com"]
@@ -85,32 +69,24 @@ git config --global credential.<HOST>.oauthDeviceEndpoint <DeviceEndpoint>
     oauthUseClientAuthHeader = false
 ```
 
-### Additional configuration
+### 額外設定
 
-Depending on the specific implementation of OAuth with your Git host you may
-also need to specify additional behavior.
+根據您的 Git 託管服務對 OAuth 的具體實作，您可能也需要指定額外的行為。
 
-#### Token user name
+#### 權杖使用者名稱
 
-If your Git host requires that you specify a username to use with OAuth tokens
-you can either include the username in the Git remote URL, or specify a default
-option via Git configuration.
+如果您的 Git 託管服務要求您指定與 OAuth 權杖一起使用的使用者名稱您可以將使用者名稱包含在 Git 遠端 URL 中，或指定一個預設選項透過 Git 設定。
 
-Example Git remote with username: `https://username@example.com/repo.git`.
-In order to use special characters you need to URL encode the values; for
-example `@` becomes `%40`.
+帶有使用者名稱的 Git 遠端範例：`https://username@example.com/repo.git`。為了使用特殊字元，您需要對值進行 URL 編碼；例如範例 `@` 變成 `%40`。
 
-By default GCM uses the value `OAUTH-USER` unless specified in the remote URL,
-or overridden using the `credential.<HOST>.oauthDefaultUserName` configuration.
+預設情況下，GCM 會使用 `OAUTH-USER` 這個值，除非在遠端 URL 中有指定，或使用 `credential.<HOST>.oauthDefaultUserName` 設定來覆寫。
 
-#### Include client authentication in headers
+#### 在標頭中包含客戶端驗證
 
-If your Git host's OAuth implementation has specific requirements about whether
-the client ID and secret should or should not be included in an `Authorization`
-header during OAuth requests, you can control this using the following setting:
+如果您的 Git 託管服務的 OAuth 實作對於是否應將客戶端 ID 與 secret 包含在 `Authorization` 標頭中，您可以使用以下設定來控制：
 
 ```shell
 git config --global credential.<HOST>.oauthUseClientAuthHeader <true|false>
 ```
 
-The default behavior is to include these values; i.e., `true`.
+預設行為是包含這些值；即 `true`。

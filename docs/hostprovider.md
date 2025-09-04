@@ -1,345 +1,180 @@
-# Git Credential Manager Host Provider
+# Git Credential Manager 主機提供者
 
-## Abstract
+## 摘要
 
-Git Credential Manger, the cross-platform and cross-host Git credential
-helper, can be extended to support any Git hosting service allowing seamless
-authentication to secured Git repositories by implementing and registering a
-"host provider".
+Git Credential Manager 是一個跨平台、跨主機的 Git 憑證輔助工具，可以透過實作並註冊一個「主機提供者」(host provider)，來擴充其功能以支援任何 Git 託管服務，從而實現對受保護 Git 儲存庫的無縫認證。
 
-## 1. Introduction
+## 1. 簡介
 
-Git Credential Manager (GCM) is a host and platform agnostic Git
-credential helper application. Support for authenticating to any Git hosting
-service can be added to GCM by creating a custom "host provider" and
-registering it within the product. Host providers can be submitted via a pull
-request on [the Git Credential Manager repository on GitHub][gcm].
+Git Credential Manager (GCM) 是一個與主機和平台無關的 Git 憑證輔助工具應用程式。要為 GCM 新增對任何 Git 託管服務的認證支援，可以透過建立一個自訂的「主機提供者」並在產品中註冊它來達成。主機提供者可以透過在 [GitHub 上的 Git Credential Manager 儲存庫][gcm] 提交 pull request 來貢獻。
 
-This document outlines the required and expected behaviour of a host provider,
-and what is required to implement and register one.
+本文件概述了主機提供者的必要與預期行為，以及實作與註冊一個主機提供者所需滿足的條件。
 
-### 1.1. Notational Conventions
+### 1.1. 標記慣例
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-specification are to be interpreted as described in
-[[RFC2119][rfc-2119]].
+本規格文件中的關鍵字「MUST」、「MUST NOT」、「REQUIRED」、「SHALL」、「SHALL NOT」、「SHOULD」、「SHOULD NOT」、「RECOMMENDED」、「MAY」和「OPTIONAL」應根據 [[RFC2119][rfc-2119]] 中的描述進行解釋。
 
-### 1.2. Abbreviations
+### 1.2. 縮寫
 
-Throughout this document you may see multiple abbreviations of product names and
-security or credential objects.
+在整份文件中，您可能會看到產品名稱和安全性或憑證物件的多種縮寫。
 
-"Git Credential Manager" is abbreviated to "GCM". "Git Credential
-Manager for Windows" is abbreviated to "GCM for Windows" or "GCM Windows".
-"Git Credential Manager for Mac & Linux" is abbreviated to "GCM for
-Mac/Linux" or "GCM Mac/Linux".
+「Git Credential Manager」縮寫為「GCM」。「Git Credential Manager for Windows」縮寫為「GCM for Windows」或「GCM Windows」。「Git Credential Manager for Mac & Linux」縮寫為「GCM for Mac/Linux」或「GCM Mac/Linux」。
 
-OAuth2 [[RFC6749][rfc-6749]] "access tokens" are
-abbreviated to "ATs" and "refresh tokens" to "RTs". "Personal Access Tokens" are
-abbreviated to "PATs".
+OAuth2 [[RFC6749][rfc-6749]] 的「access tokens」縮寫為「ATs」，「refresh tokens」縮寫為「RTs」。「Personal Access Tokens」縮寫為「PATs」。
 
-## 2. Implementation
+## 2. 實作
 
-Writing and adding a host provider to GCM requires two main actions:
-implementing the `IHostProvider` interface, and registering an instance of the
-provider with the application via the host provider registry.
+要為 GCM 編寫並新增一個主機提供者，需要兩個主要步驟：實作 `IHostProvider` 介面，以及透過主機提供者註冊表向應用程式註冊該提供者的一個實例。
 
-Host providers MUST implement the `IHostProvider` interface. They can choose to
-directly implement the interface they MAY derive from the `HostProvider`
-abstract class (which itself implements the `IHostProvider` interface) - see
-[2.6][hostprovider-base-class].
+主機提供者 MUST 實作 `IHostProvider` 介面。它們可以選擇直接實作此介面，也 MAY 繼承自 `HostProvider` 抽象類別（此類別本身也實作了 `IHostProvider` 介面）——請參閱 [2.6][hostprovider-base-class]。
 
-Implementors MUST implement all interface properties and abstract methods.
+實作者 MUST 實作所有介面屬性與抽象方法。
 
-The `Id` and `Name` properties MUST be implemented and MUST NOT return default
-or empty values.
+`Id` 和 `Name` 屬性 MUST 被實作，且 MUST NOT 回傳預設值或空值。
 
-The `Id` field MUST be unique over the set of all providers, or
-else an error will be thrown at registration time. The `Id` field MAY be a
-unique random string of characters and digits such as a UUID, but it is
-RECOMMENDED to use a human-readable value consisting of letter characters in the
-range \[a-z\] only.
+`Id` 欄位在所有提供者的集合中 MUST 是唯一的，否則在註冊時將會拋出錯誤。`Id` 欄位 MAY 是一個由字元和數字組成的唯一隨機字串，例如 UUID，但 RECOMMENDED 使用一個由 \[a-z\] 範圍內的字母字元組成且人類可讀的值。
 
-The `Name` property MUST be a human readable string and MUST identify the Git
-hosting service this provider supports.
+`Name` 屬性 MUST 是一個使用者可讀的字串，並且 MUST 指明此提供者所支援的 Git 託管服務。
 
-The `SupportedAuthorityIds` property MUST return an instance of an object and
-NOT a `null` reference. Populating this collection with values is OPTIONAL but
-highly RECOMMENDED. You should return a set of stable identifiers of all
-authorities that the provider supports authentication against.
+`SupportedAuthorityIds` 屬性 MUST 回傳一個物件的實例，而 NOT `null` 參考。在此集合中填入值是 OPTIONAL 的，但高度 RECOMMENDED。您應該回傳一個集合，其中包含此提供者支援認證的所有授權單位的穩定識別碼。
 
-### 2.1. Registration
+### 2.1. 註冊
 
-Host providers must provide an instance of their `IHostProvider` type to the
-GCM application host provider registry to be considered for handling
-requests.
+主機提供者必須將其 `IHostProvider` 型別的實例提供給 GCM 應用程式的主機提供者註冊表，才能被納入處理請求的考量。
 
-The main GCM `Application` object has one principal registry which you can
-register providers with by calling the `RegisterProvider` method.
+主要的 GCM `Application` 物件有一個主註冊表，您可以透過呼叫 `RegisterProvider` 方法來註冊提供者。
 
-#### 2.1.2. Ordering
+#### 2.1.2. 順序
 
-The default host provider registry in GCM has multiple priority levels that
-host providers can be registered at: High, Normal, and Low.
+GCM 中預設的主機提供者註冊表有多個優先級別，主機提供者可以在這些級別註冊：高 (High)、正常 (Normal) 和低 (Low)。
 
-For each priority level (starting with High, then Normal, then Low), the
-registry will call each host provider in the order they were registered in,
-unless the user has overridden the provider selection process.
+對於每個優先級別（從高到正常再到低），註冊表將按照註冊順序呼叫每個主機提供者，除非使用者覆寫了提供者選擇流程。
 
-There are no rules or restrictions on the ordering of host providers, except
-that the `GenericHostProvider` MUST be registered last and at the Low priority.
-The generic provider is a catch-all provider implementation that will handle any
-request in a standard way.
+主機提供者的順序沒有規則或限制，但 `GenericHostProvider` MUST 最後註冊且優先級為低。通用提供者是一個包羅萬象的提供者實作，它會以標準方式處理任何請求。
 
-### 2.2. Handling Requests
+### 2.2. 處理請求
 
-The `IsSupported(InputArguments)` method will be called on all registered host
-providers in-turn on the invocation of a `get`, `store`, or `erase` request. The
-first host provider to return `true` will be called upon to handle the specific
-request. If the user has overridden the host provider selection process, a
-specific host provider may be selected instead, and the
-`IsSupported(InputArguments)` method will NOT be called.
+當一個 `get`、`store` 或 `erase` 請求被呼叫時，`IsSupported(InputArguments)` 方法將會依序在所有已註冊的主機提供者上被呼叫。第一個回傳 `true` 的主機提供者將被指派處理該特定請求。如果使用者覆寫了主機提供者的選擇流程，則可能會改為選定一個特定的主機提供者，且 `IsSupported(InputArguments)` 方法將 NOT 被呼叫。
 
-This method MUST return `true` if and only if the provider understands the
-request and can serve or handle the request. If the provider does not know how
-to handle the request it MUST return `false` instead.
+此方法 MUST 回傳 `true` 的時機，若且唯若該提供者理解該請求且能夠服務或處理該請求。如果提供者不知道如何處理請求，則 MUST 回傳 `false`。
 
-If no host provider returns `true` to a call to the `IsSupported(InputArguments)`
-method for a each host provider priority level, then a HTTP HEAD request will be
-made to the remote URL and each host provider will be be called via the
-`IsSupported(HttpResponseMessage)` method. A host provider SHOULD use this call
-to check for recognised on-premises instances (for example, by inspecting
-response headers) and return `true` if it wishes to be called upon to handle the
-credential request, otherwise it MUST return `false`.
+如果在每個主機提供者優先級別中，都沒有主機提供者對 `IsSupported(InputArguments)` 方法的呼叫回傳 `true`，那麼將會向遠端 URL 發送一個 HTTP HEAD 請求，並透過 `IsSupported(HttpResponseMessage)` 方法呼叫每個主機提供者。主機提供者 SHOULD 利用此呼叫來檢查可識別的本地部署實例（例如，透過檢查回應標頭），如果它希望被指派處理憑證請求，則回傳 `true`，否則 MUST 回傳 `false`。
 
-Host providers SHOULD NOT make further network calls if possible during any of
-the `IsSupported` method overloads to avoid degrading the performance of the
-overall application.
+主機提供者 SHOULD 盡可能避免在任何 `IsSupported` 方法的多載中進行額外的網路呼叫，以避免降低整體應用程式的效能。
 
-#### 2.2.1. Rejecting Requests
+#### 2.2.1. 拒絕請求
 
-The `IsSupported` methods MUST return `true` if the host provider would like to
-cancel the authentication operation based on the current context or input.
-For example, if provider requires a secure protocol but the requested protocol
-for a supported hostname is `http` and not `https`.
+如果主機提供者希望根據目前的上下文或輸入取消認證操作，`IsSupported` 方法 MUST 回傳 `true`。例如，當提供者要求安全協定，但支援的主機名稱所請求的協定是 `http` 而非 `https` 時。
 
-Host providers MUST instead cancel the request from the `GetCredentialAsync`
-method by throwing an `Exception`. Implementors MUST provide detailed
-information regarding the reason why the authentication cannot continue, for
-example "HTTP is not secure, please use HTTPS".
+主機提供者 MUST 改為從 `GetCredentialAsync` 方法中透過拋出 `Exception` 來取消請求。實作者 MUST 提供關於為何無法繼續認證的詳細資訊，例如「HTTP 不安全，請使用 HTTPS」。
 
-### 2.3. Retrieving Credentials
+### 2.3. 取得憑證
 
-The `GetCredentialAsync` method will be called when a `get` request is made.
-The method MUST return an instance of an `ICredential` capable of fulfilling the
-specific access request. The argument passed to `GetCredentialAsync` contains
-properties indicating the required `protocol` and `host` for this request. The
-`username` and `path` properties are OPTIONAL, however if they are present, they
-MUST be considered and used to direct the authentication.
+當發出 `get` 請求時，將會呼叫 `GetCredentialAsync` 方法。該方法 MUST 回傳一個能夠滿足特定存取請求的 `ICredential` 實例。傳遞給 `GetCredentialAsync` 的引數包含屬性，指明此請求所需的 `protocol` 和 `host`。`username` 和 `path` 屬性是 OPTIONAL 的，但如果它們存在，則 MUST 將其納入考量並用於引導認證過程。
 
-The host provider MAY attempt to locate any existing credential, stored by the
-`StoreCredentialAsync` method, before resorting to the creation a new one.
+在建立新憑證之前，主機提供者 MAY 嘗試尋找任何由 `StoreCredentialAsync` 方法儲存的既有憑證。
 
-The host provider MAY choose to check if a stored credential is still valid
-by inspecting any stored metadata associated with the value. A host provider MAY
-also choose to further validate a retrieved stored credential by making a web
-request. However, it is NOT RECOMMENDED to make any request that is known to be
-slow or that typically produces inconclusive validation results.
+主機提供者 MAY 透過檢查與值相關聯的任何已儲存的 Metadata 來確認儲存的憑證是否仍然有效。主機提供者也 MAY 選擇透過發送網頁請求來進一步驗證取出的已儲存憑證。然而，NOT RECOMMENDED 發送任何已知速度緩慢或通常會產生不確定驗證結果的請求。
 
-If a provider chooses to make a validation web request and that request fails or
-is inconclusive, it SHOULD assume the credential is still valid and return it
-anyway, letting Git (the caller) attempt to use it and validate it itself.
+如果提供者選擇發送驗證用的網頁請求，而該請求失敗或結果不確定，它 SHOULD 假定該憑證仍然有效並照常回傳，讓 Git（呼叫者）自行嘗試使用並驗證它。
 
-The returned `ICredential` MAY leave both the username and password values as
-the empty string or `null`. This signals to Git (or rather cURL) that it should
-negotiate the authentication mechanism with the remote itself. This is typically
-used for Windows Integrated Authentication.
+回傳的 `ICredential` MAY 將使用者名稱和密碼值都保留為空字串或 `null`。這向 Git（或者說是 cURL）發出信號，表示它應該自行與遠端協商認證機制。這通常用於 Windows 整合式驗證。
 
-#### 2.3.1 Authentication Prompts
+#### 2.3.1 認證提示
 
-When it is not possible to locate an existing credential suitable for the
-current request, a host provider SHOULD prompt the user to complete an
-authentication flow.
+當無法找到適合當前請求的既有憑證時，主機提供者 SHOULD 提示使用者完成一個認證流程。
 
-The method, modes, and interactions for performing authentication will vary
-widely between Git hosting services and their supported authentication
-authorities. A host provider SHOULD attempt to detect the best authentication
-experience given the current environment or context, and select that one to
-attempt first.
+執行認證的方法、模式和互動方式會因不同的 Git 託管服務及其支援的認證授權單位而有很大的差異。主機提供者 SHOULD 嘗試根據當前的環境或上下文偵測最佳的認證體驗，並選擇該體驗作為首次嘗試。
 
-Host providers are RECOMMENDED to attempt authentication mechanisms that do not
-require user interaction if possible. If there are multiple authentication
-mechanisms that could be equally considered "best" they MAY prompt the user
-to make a selection. Host providers MAY wish to remember such a selection for
-future use, however they MUST make it clear how to clear this stored selection
-to the user.
+RECOMMENDED 主機提供者盡可能嘗試不需要使用者互動的認證機制。如果有多個可被同等視為「最佳」的認證機制，它們 MAY 提示使用者進行選擇。主機提供者 MAY 希望記住這樣的選擇以供將來使用，但它們 MUST 向使用者清楚說明如何清除這個已儲存的選擇。
 
-If interaction is required to complete authentication a host provider MUST first
-check if interaction has been disabled (`ISettings.IsInteractionAllowed`), and
-an exception MUST be thrown if interaction has been disallowed.
+如果需要互動才能完成認證，主機提供者 MUST 首先檢查互動是否已被禁用 (`ISettings.IsInteractionAllowed`)，如果互動已被禁止，則 MUST 拋出例外。
 
-Authentication prompts that display a graphical user interface such as a window
-are MUST be preferred when an interactive "desktop" session is available.
+當有互動式「桌面」會話可用時，MUST 優先選用顯示圖形使用者介面（如視窗）的認證提示。
 
-If an authentication prompt is required when an interactive session is not
-available and a terminal/TTY is attached then a provider MUST first check if
-terminal prompts are enabled (`ISettings.IsTerminalPromptsEnabled`), and an
-exception MUST be thrown if interaction has been disallowed.
+如果在沒有互動式會話可用但已連接終端機/TTY 的情況下需要認證提示，那麼提供者 MUST 首先檢查終端機提示是否已啟用 (`ISettings.IsTerminalPromptsEnabled`)，如果互動已被禁止，則 MUST 拋出例外。
 
-### 2.4. Storing Credentials
+### 2.4. 儲存憑證
 
-Host providers MAY store credentials at various stages of a typical
-authentication flow, or when explicitly requested to do so in a call to
-`StoreCredentialAsync`.
+主機提供者 MAY 在典型認證流程的各個階段，或在 `StoreCredentialAsync` 的呼叫中被明確要求時儲存憑證。
 
-Providers SHOULD use the credential store (exposed as `ICredentialStore`) to
-persist secret values and credential entities such as passwords, PATs and OAuth
-tokens.
+提供者 SHOULD 使用憑證儲存庫（以 `ICredentialStore` 的形式公開）來持久化保存密碼、PAT 和 OAuth 權杖等機密值與憑證實體。
 
-The typical Git credential helper call pattern is one call to `get`, followed by
-either a `store` request in case of a HTTP 200 (OK) response, or `erase` in case
-of HTTP 401 (Unauthorized) response. In some cases there is additional context
-that is present as part of the `get` request or during the generation of a new
-credential that is not present during the subsequent call to `store` (or
-`erase`). In these cases providers MAY store the credential during the `get`
-rather than, or as well as during the `store`.
+典型的 Git 憑證輔助工具呼叫模式是一次 `get` 呼叫，接著若收到 HTTP 200 (OK) 回應則發出 `store` 請求，若收到 HTTP 401 (Unauthorized) 回應則發出 `erase` 請求。在某些情況下，`get` 請求或新憑證產生過程中存在的額外上下文，在隨後的 `store`（或 `erase`）呼叫中並不存在。在這些情況下，提供者 MAY 在 `get` 過程中儲存憑證，而不是在 `store` 過程中儲存，或兩者都儲存。
 
-Host providers MAY store multiple credentials or tokens in the same request if
-it is required. One example where multiple credential storage is needed is with
-OAuth2 access tokens (AT) and refresh tokens (RT). Both the AT and RT SHOULD be
-stored in the same location using the credential store with complementary
-credential service names.
+如果需要，主機提供者 MAY 在同一個請求中儲存多個憑證或權杖。需要儲存多個憑證的一個範例是 OAuth2 的 access tokens (AT) 和 refresh tokens (RT)。AT 和 RT BOTH SHOULD 使用憑證儲存庫儲存在相同的位置，並使用互補的憑證服務名稱。
 
-### 2.5. Erasing Credentials
+### 2.5. 清除憑證
 
-If host providers have stored credentials in the credential store, they MUST
-respond to requests to erase them in calls to `EraseCredentialAsync`.
+如果主機提供者已將憑證儲存在憑證儲存庫中，它們 MUST 在 `EraseCredentialAsync` 的呼叫中回應清除憑證的請求。
 
-If a host provider cannot locate a credential to erase it MUST NOT raise an
-error and MUST exit successfully. A warning message MAY be emitted to the
-tracing system.
+如果主機提供者找不到要清除的憑證，它 MUST NOT 引發錯誤，且 MUST 成功退出。可以向追蹤系統發出一條警告訊息。
 
-Host providers MUST NOT perform their own repeated validation of credentials
-for the purposes of ignoring the request to erase them. The ultimate authority
-on the validity of a credential is the caller (Git).
+主機提供者 MUST NOT 為了忽略清除請求而自行重複驗證憑證。憑證有效性的最終決定權在於呼叫者 (Git)。
 
-Providers MAY validate any additional or ancillary credentials (such as OAuth
-RTs) are still valid when a request to erase the primary credential (such as an
-OAuth AT) is made, and choose not to delete those additional credentials. The
-primary credential MUST still always be erased in all cases.
+當收到清除主要憑證（如 OAuth AT）的請求時，提供者 MAY 驗證任何額外或輔助憑證（如 OAuth RTs）是否仍然有效，並選擇不刪除那些額外的憑證。但在任何情況下，主要憑證 MUST 始終被清除。
 
-### 2.6 `HostProvider` base class
+### 2.6 `HostProvider` 基礎類別
 
-The `HostProvider` abstract base class is provided for the convenience of host
-provider implementors. This base class implements most required methods of the
-`IHostProvider` interface with common credential recall and storage behaviour.
+提供 `HostProvider` 抽象基礎類別是為了方便主機提供者的實作者。這個基礎類別實作了 `IHostProvider` 介面的大部分必要方法，並具備常見的憑證取回與儲存行為。
 
-The `GetCredentialAsync`, `StoreCredentialAsync`, and `EraseCredentialAsync`
-methods are implemented as `virtual` meaning they MAY be overridden by derived
-classes to customise the behaviour of those operations. It is NOT RECOMMENDED
-to derive from the `HostProvider` base class if the implementor must override
-most of the methods as implemented - implementors SHOULD implement the
-`IHostProvider` interface directly instead.
+`GetCredentialAsync`、`StoreCredentialAsync` 和 `EraseCredentialAsync` 方法被實作為 `virtual`，這意味著它們 MAY 被衍生類別覆寫以自訂這些操作的行為。如果實作者必須覆寫大部分已實作的方法，則 NOT RECOMMENDED 從 `HostProvider` 基礎類別衍生——實作者 SHOULD 直接實作 `IHostProvider` 介面。
 
-Implementors that choose to derive from this base class MUST implement all
-abstract methods and properties. The primary abstract method to implement
-is `GenerateCredentialAsync`.
+選擇從此基礎類別衍生的實作者 MUST 實作所有抽象方法和屬性。要實作的主要抽象方法是 `GenerateCredentialAsync`。
 
-There is also an additional `virtual` method named `GetServiceName` that is used
-by the default implementations of the `Get|Store|EraseCredentialAsync` methods
-to locate and store credentials.
+還有一個額外的 `virtual` 方法名為 `GetServiceName`，`Get|Store|EraseCredentialAsync` 方法的預設實作會使用它來尋找和儲存憑證。
 
 #### 2.6.1 `GetServiceName`
 
-The `GetServiceName` virtual method, if overriden, MUST return a string that
-identifies the service/provider for this request, and is used for storing
-credentials. The value returned MUST be stable - i.e, it MUST return the same
-value given the same or equivalent input arguments.
+`GetServiceName` 虛擬方法如果被覆寫，MUST 回傳一個字串，用以識別此請求的服務/提供者，並用於儲存憑證。回傳的值 MUST 是穩定的——也就是說，對於相同或等效的輸入引數，它 MUST 回傳相同的值。
 
-By default this method returns the full remote URI, without a trailing slash,
-including protocol/scheme, hostname, and path if present in the input arguments.
-Any username in the input arguments is never included in the URI.
+預設情況下，此方法會回傳完整的遠端 URI，不含結尾的斜線，並包含輸入引數中存在的協定/方案、主機名稱和路徑。輸入引數中的任何使用者名稱都不會包含在 URI 中。
 
 #### 2.6.2 `GenerateCredentialAsync`
 
-The `GenerateCredentialAsync` method will be called if an existing credential
-with a matching service (from `GetServiceName`) and account is not found in the
-credential store.
+如果在憑證儲存庫中找不到具有相符服務（來自 `GetServiceName`）和帳戶的既有憑證，則會呼叫 `GenerateCredentialAsync` 方法。
 
-This method MUST return a freshly created/generated credential and not any
-existing or stored one. It MAY use existing or stored ancillary data or tokens,
-such as OAuth refresh tokens, to generate the new token (such as an OAuth AT).
+此方法 MUST 回傳一個全新建立/產生的憑證，而不是任何既有或已儲存的憑證。它 MAY 使用既有或已儲存的輔助資料或權杖（例如 OAuth refresh tokens）來產生新的權杖（例如 OAuth AT）。
 
-### 2.7. External Metadata
+### 2.7. 外部 Metadata
 
-Host providers MAY wish to store extra data about authentications or users
-collected or produced during authentication operations. These SHOULD be stored
-in a per-user, local location such as the user's home or profile directory.
+主機提供者 MAY 希望儲存關於在認證操作期間收集或產生的認證或使用者的額外資料。這些資料 SHOULD 儲存在每個使用者的本地位置，例如使用者的家目錄或設定檔目錄。
 
-Secrets, credentials or other sensitive data SHOULD be stored in the credential
-store, or otherwise protected by some form of per-user, local encryption.
+機密、憑證或其他敏感資料 SHOULD 儲存在憑證儲存庫中，或透過某種形式的每個使用者本地加密來加以保護。
 
-In the case of stored data caches, providers SHOULD invalidate relevant parts
-of, or the entire cache, when a call to `EraseCredentialAsync` is made.
+對於已儲存的資料快取，當呼叫 `EraseCredentialAsync` 時，提供者 SHOULD 使相關部分或整個快取失效。
 
-## 3. Helpers
+## 3. 輔助工具
 
-Host providers MAY wish to make use of platform or operating system specific
-features such as native APIs and native graphical user interfaces, in order to
-offer a better authentication experience.
+主機提供者 MAY 希望利用平台或作業系統特定的功能，例如原生 API 和原生圖形使用者介面，以提供更好的認證體驗。
 
-Host providers MUST function without the presence of a helper, even if that
-function is to fail gracefully with a user-friendly error message, including
-a remedy to correct their installation. Host providers SHOULD always offer a
-terminal/TTY or text-based authentication mechanism alongside any graphical
-interface provided by a helper.
+主機提供者 MUST 在沒有輔助工具的情況下也能運作，即使該運作方式是優雅地失敗並顯示使用者友善的錯誤訊息，其中應包含修正其安裝的方法。主機提供者 SHOULD 總是在輔助工具提供的任何圖形介面之外，另外提供一個終端機/TTY 或基於文字的認證機制。
 
-In order to achieve this host providers MUST introduce an out-of-process
-"helper" executable that can be invoked from the main GCM process. This
-allows the "helper" executable full implementation freedom of runtime, language,
-etc.
+為了達成此目的，主機提供者必須引入一個跨程序的「輔助」可執行檔，可從 GCM 主程序呼叫。這允許「輔助」可執行檔在執行時期、語言等方面擁有完全的實作自由，等等。
 
-Communications between the main and helper processes MAY use any IPC mechanism
-available. It is RECOMMENDED implementors use standard input/output streams or
-file descriptors to send and receive data as this is consistent with how Git and
-GCM communicate. UNIX sockets or Windows Named Pipes MAY also be used when
-an ongoing back-and-forth communication is required.
+主程序與輔助程序之間的通訊可使用任何 IPC 機制。建議實作者使用標準輸入/輸出串流或檔案描述符來傳送和接收資料，因為這與 Git 和GCM 的通訊方式一致。當需要持續的來回通訊時，也可使用 UNIX 通訊端或 Windows 具名管道。
 
-### 3.1. Discovery
+### 3.1. 探索
 
-It is RECOMMENDED that helper discovery is achieved by simply checking for the
-presence of the expected executable file. The name and path of the helper
-executable SHOULD be configurable by the user via Git's configuration files.
+建議透過簡單地檢查預期可執行檔是否存在來達成輔助程式的探索。輔助可執行檔的名稱與路徑應可讓使用者透過 Git 的設定檔進行設定。
 
-## 4. Error Handling
+## 4. 錯誤處理
 
-If an unrecoverable error occurs a host provider MUST throw an exception and
-MUST include detailed failure information in the error message. If the reason
-for failure can be fixed by the user the error message MUST include instructions
-to fix the problem, or a link to online documentation.
+若發生無法復原的錯誤，主機提供者必須擲出例外，且必須在錯誤訊息中包含詳細的失敗資訊。如果失敗原因可由使用者修正，錯誤訊息必須包含修正問題的說明，或提供線上文件的連結。
 
-In the case of a recoverable error, host providers SHOULD print a warning
-message to the standard error stream, and MUST include the error information and
-the recovery steps take in the trace log.
+在發生可復原錯誤的情況下，主機提供者應印出警告訊息至標準錯誤串流，並且必須在追蹤日誌中包含錯誤資訊與所採取的復原步驟。
 
-In the case of an authentication error, providers SHOULD attempt to prompt the
-user again with a message indicating the incorrect authentication details have
-been entered.
+在發生驗證錯誤的情況下，提供者應嘗試再次提示使用者，並顯示訊息指出已輸入不正確的驗證詳細資料。
 
-## 5. Custom Commands
+## 5. 自訂指令
 
-If a host provider wishes to surface custom commands the SHOULD implement the
-`ICommandProvider` interface.
+如果主機提供者希望提供自訂指令，則應實作`ICommandProvider` 介面。
 
-Each provider is given the opportunity to create a single `ProviderCommand`
-instance to which further sub-commands can be parented to. Commanding is
-provided by the `System.CommandLine` API library [[1][references]].
+每個提供者都有機會建立一個單一的 `ProviderCommand` 執行個體，其他子指令可隸屬於其下。指令功能是由 `System.CommandLine` API 函式庫 [[1][references]] 提供。
 
-There are no limitations on what format sub-commands, arguments, or options must
-take, but implementors SHOULD attempt to follow existing practices and styles.
+對於子指令、引數或選項必須採用的格式並無限制，但實作者應嘗試遵循現有的實務與風格。
 
-## References
+## 參考資料
 
 1. [`System.CommandLine` API][github-dotnet-cli]
 
