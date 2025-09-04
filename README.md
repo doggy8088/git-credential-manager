@@ -1,119 +1,110 @@
-# Git Credential Manager
+# Git 憑證管理員
 
 [![Build Status][build-status-badge]][workflow-status]
 
 ---
 
-[Git Credential Manager][gcm] (GCM) is a secure
-[Git credential helper][git-credential-helper] built on [.NET][dotnet] that runs
-on Windows, macOS, and Linux. It aims to provide a consistent and secure
-authentication experience, including multi-factor auth, to every major source
-control hosting service and platform.
+[Git 憑證管理員][gcm] (GCM) 是一個基於 [.NET][dotnet] 建置的安全
+[Git 憑證助手][git-credential-helper]，可在 Windows、macOS 和 Linux 上執行。
+它旨在為每個主要的原始碼控制託管服務和平台提供一致且安全的身份驗證體驗，
+包括多因素驗證。
 
-GCM supports (in alphabetical order) [Azure DevOps][azure-devops], Azure DevOps
-Server (formerly Team Foundation Server), Bitbucket, GitHub, and GitLab.
-Compare to Git's [built-in credential helpers][git-tools-credential-storage]
-(Windows: wincred, macOS: osxkeychain, Linux: gnome-keyring/libsecret), which
-provide single-factor authentication support for username/password only.
+GCM 支援（按字母順序）[Azure DevOps][azure-devops]、Azure DevOps
+Server（前身為 Team Foundation Server）、Bitbucket、GitHub 和 GitLab。
+與 Git 的[內建憑證助手][git-tools-credential-storage]相比
+（Windows：wincred，macOS：osxkeychain，Linux：gnome-keyring/libsecret），
+後者僅提供使用者名稱/密碼的單因素驗證支援。
 
-GCM replaces both the .NET Framework-based
-[Git Credential Manager for Windows][gcm-for-windows] and the Java-based
-[Git Credential Manager for Mac and Linux][gcm-for-mac-and-linux].
+GCM 取代了基於 .NET Framework 的
+[Git Credential Manager for Windows][gcm-for-windows] 和基於 Java 的
+[Git Credential Manager for Mac and Linux][gcm-for-mac-and-linux]。
 
-## Install
+## 安裝
 
-See the [installation instructions][install] for the current version of GCM for
-install options for your operating system.
+請參閱 GCM 當前版本的[安裝說明][install]，了解您作業系統的安裝選項。
 
-## Current status
+## 目前狀態
 
-Git Credential Manager is currently available for Windows, macOS, and Linux\*.
-GCM only works with HTTP(S) remotes; you can still use Git with SSH:
+Git 憑證管理員目前可用於 Windows、macOS 和 Linux\*。
+GCM 僅適用於 HTTP(S) 遠端；您仍可以使用 Git 與 SSH：
 
 - [Azure DevOps SSH][azure-devops-ssh]
 - [GitHub SSH][github-ssh]
 - [Bitbucket SSH][bitbucket-ssh]
 
-Feature|Windows|macOS|Linux\*
+功能|Windows|macOS|Linux\*
 -|:-:|:-:|:-:
-Installer/uninstaller|&#10003;|&#10003;|&#10003;
-Secure platform credential storage [(see more)][gcm-credstores]|&#10003;|&#10003;|&#10003;
-Multi-factor authentication support for Azure DevOps|&#10003;|&#10003;|&#10003;
-Two-factor authentication support for GitHub|&#10003;|&#10003;|&#10003;
-Two-factor authentication support for Bitbucket|&#10003;|&#10003;|&#10003;
-Two-factor authentication support for GitLab|&#10003;|&#10003;|&#10003;
-Windows Integrated Authentication (NTLM/Kerberos) support|&#10003;|_N/A_|_N/A_
-Basic HTTP authentication support|&#10003;|&#10003;|&#10003;
-Proxy support|&#10003;|&#10003;|&#10003;
-`amd64` support|&#10003;|&#10003;|&#10003;
-`x86` support|&#10003;|_N/A_|&#10007;
-`arm64` support|best effort|&#10003;|&#10003;
-`armhf` support|_N/A_|_N/A_|&#10003;
+安裝程式/解除安裝程式|&#10003;|&#10003;|&#10003;
+安全平台憑證儲存 [(查看更多)][gcm-credstores]|&#10003;|&#10003;|&#10003;
+Azure DevOps 多因素驗證支援|&#10003;|&#10003;|&#10003;
+GitHub 雙因素驗證支援|&#10003;|&#10003;|&#10003;
+Bitbucket 雙因素驗證支援|&#10003;|&#10003;|&#10003;
+GitLab 雙因素驗證支援|&#10003;|&#10003;|&#10003;
+Windows 整合驗證 (NTLM/Kerberos) 支援|&#10003;|_不適用_|_不適用_
+基本 HTTP 驗證支援|&#10003;|&#10003;|&#10003;
+代理伺服器支援|&#10003;|&#10003;|&#10003;
+`amd64` 支援|&#10003;|&#10003;|&#10003;
+`x86` 支援|&#10003;|_不適用_|&#10007;
+`arm64` 支援|盡力而為|&#10003;|&#10003;
+`armhf` 支援|_不適用_|_不適用_|&#10003;
 
-(\*) GCM guarantees support only for [the Linux distributions that are officially
-supported by dotnet][dotnet-distributions].
+(\*) GCM 僅保證支援 [dotnet 官方支援的 Linux 發行版][dotnet-distributions]。
 
-## Supported Git versions
+## 支援的 Git 版本
 
-Git Credential Manager tries to be compatible with the broadest set of Git
-versions (within reason). However there are some know problematic releases of
-Git that are not compatible.
+Git 憑證管理員試圖與最廣泛的 Git 版本集合相容（在合理範圍內）。
+然而，有一些已知的問題版本的 Git 與 GCM 不相容。
 
 - Git 1.x
 
-  The initial major version of Git is not supported or tested with GCM.
+  不支援或測試 Git 的初始主要版本與 GCM。
 
 - Git 2.26.2
 
-  This version of Git introduced a breaking change with parsing credential
-  configuration that GCM relies on. This issue was fixed in commit
-  [`12294990`][gcm-commit-12294990] of the Git project, and released in Git
-  2.27.0.
+  這個版本的 Git 在解析 GCM 依賴的憑證配置時引入了一個重大變更。
+  這個問題在 Git 專案的提交 [`12294990`][gcm-commit-12294990] 中修復，
+  並在 Git 2.27.0 中發布。
 
-## How to use
+## 如何使用
 
-Once it's installed and configured, Git Credential Manager is called implicitly
-by Git. You don't have to do anything special, and GCM isn't intended to be
-called directly by the user. For example, when pushing (`git push`) to
-[Azure DevOps][azure-devops], [Bitbucket][bitbucket], or [GitHub][github], a
-window will automatically open and walk you through the sign-in process. (This
-process will look slightly different for each Git host, and even in some cases,
-whether you've connected to an on-premises or cloud-hosted Git host.) Later Git
-commands in the same repository will re-use existing credentials or tokens that
-GCM has stored for as long as they're valid.
+一旦安裝和配置完成，Git 憑證管理員會被 Git 隱式呼叫。您不需要做任何特殊的事情，
+GCM 也不打算由使用者直接呼叫。例如，當推送（`git push`）到
+[Azure DevOps][azure-devops]、[Bitbucket][bitbucket] 或 [GitHub][github] 時，
+會自動開啟一個視窗並引導您完成登入過程。（此過程對於每個 Git 主機看起來會略有不同，
+甚至在某些情況下，取決於您是否連接到本地或雲端託管的 Git 主機。）
+在同一個儲存庫中的後續 Git 命令將重新使用 GCM 儲存的現有憑證或權杖，
+只要它們仍然有效。
 
-Read full command line usage [here][gcm-usage].
+閱讀完整的命令列使用說明[在此][gcm-usage]。
 
-### Configuring a proxy
+### 配置代理伺服器
 
-See detailed information [here][gcm-http-proxy].
+詳細資訊請參閱[此處][gcm-http-proxy]。
 
-## Additional Resources
+## 其他資源
 
-See the [documentation index][docs-index] for links to additional resources.
+請參閱[文件索引][docs-index]以獲取其他資源的連結。
 
-## Experimental Features
+## 實驗性功能
 
-- [Windows broker (experimental)][gcm-windows-broker]
+- [Windows 代理程式（實驗性）][gcm-windows-broker]
 
-## Future features
+## 未來功能
 
-Curious about what's coming next in the GCM project? Take a look at the [project
-roadmap][roadmap]! You can find more details about the construction of the
-roadmap and how to interpret it [here][roadmap-announcement].
+想知道 GCM 專案的下一步計畫嗎？查看[專案路線圖][roadmap]！
+您可以在[此處][roadmap-announcement]找到有關路線圖構建方式和解讀方法的更多詳細資訊。
 
-## Contributing
+## 貢獻
 
-This project welcomes contributions and suggestions.
-See the [contributing guide][gcm-contributing] to get started.
+本專案歡迎貢獻和建議。
+請參閱[貢獻指南][gcm-contributing]開始參與。
 
-This project follows [GitHub's Open Source Code of Conduct][gcm-coc].
+本專案遵循 [GitHub 的開源行為準則][gcm-coc]。
 
-## License
+## 授權條款
 
-We're [MIT][gcm-license] licensed.
-When using GitHub logos, please be sure to follow the
-[GitHub logo guidelines][github-logos].
+我們使用 [MIT][gcm-license] 授權條款。
+使用 GitHub 標誌時，請務必遵循 [GitHub 標誌指南][github-logos]。
 
 [azure-devops]: https://azure.microsoft.com/en-us/products/devops
 [azure-devops-ssh]: https://docs.microsoft.com/en-us/azure/devops/repos/git/use-ssh-keys-to-authenticate?view=azure-devops
@@ -140,7 +131,6 @@ When using GitHub logos, please be sure to follow the
 [github-ssh]: https://help.github.com/en/articles/connecting-to-github-with-ssh
 [github-logos]: https://github.com/logos
 [install]: https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md
-[ms-package-repos]: https://packages.microsoft.com/repos/
 [roadmap]: https://github.com/git-ecosystem/git-credential-manager/milestones?direction=desc&sort=due_date&state=open
 [roadmap-announcement]: https://github.com/git-ecosystem/git-credential-manager/discussions/1203
 [workflow-status]: https://github.com/git-ecosystem/git-credential-manager/actions/workflows/continuous-integration.yml
